@@ -1,7 +1,6 @@
-# AWS
+# Setup guide
 
-This is a sample template for AWS - Below is a brief explanation of what we have generated for you:
-
+## Project structure
 ```bash
 ├── README.md                                   <-- This instructions file
 ├── SpeakeasyFunction                          <-- Source for SpeakeasyFunction Lambda Function
