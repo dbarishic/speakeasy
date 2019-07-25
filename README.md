@@ -1,5 +1,8 @@
 # Setup guide
 
+## Quickstart
+If you have everything set up properly you can just run one of the deployment scripts based on your operating system.
+
 ## Project structure
 ```bash
 ├── README.md                                   <-- This instructions file
