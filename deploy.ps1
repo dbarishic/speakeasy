@@ -1,6 +1,6 @@
 Push-Location $PSScriptRoot
 
-sam build
+sam build -u
 
 if ($?) {
     sam package --output-template-file packaged.yaml --s3-bucket speakeasy-deployments
