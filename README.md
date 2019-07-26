@@ -74,7 +74,7 @@ AWS Lambda Java runtime accepts either a zip file or a standalone JAR file - We 
         Type: AWS::Serverless::Function
         Properties:
             CodeUri: target/Speakeasy-1.0.jar
-            Handler: com.dbarishic.speakeasy.App::handleRequest
+            Handler: com.dbarishic.speakeasy.SynthesizeSpeechFunction::handleRequest
 ```
 
 Firstly, we need a `S3 bucket` where we can upload our Lambda functions packaged as ZIP before we deploy anything - If you don't have a S3 bucket to store code artifacts then this is a good time to create one:

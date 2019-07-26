@@ -5,13 +5,13 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
-public class AppTest {
+public class SynthesizeSpeechFunctionTest {
   @Test
   public void successfulResponse() {
-    App app = new App();
+    SynthesizeSpeechFunction synthesizeSpeechFunction = new SynthesizeSpeechFunction();
     Request request = new Request();
     request.setMessage("testMessage");
-    Response result = app.handleRequest(request, null);
+    Response result = synthesizeSpeechFunction.handleRequest(request, null);
     assertEquals(result.getStatusCode(), 200);
     String content = result.getBody();
     assertNotNull(content);

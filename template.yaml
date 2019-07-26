@@ -9,11 +9,11 @@ Globals:
     Timeout: 20
 
 Resources:
-  SpeakeasyFunction:
+  SynthesizeSpeechFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
-      CodeUri: SpeakeasyFunction
-      Handler: com.dbarishic.speakeasy.App::handleRequest
+      CodeUri: SpeakeasyFunctions
+      Handler: com.dbarishic.speakeasy.SynthesizeSpeechFunction::handleRequest
       Runtime: java8
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
         Variables:
@@ -22,11 +22,11 @@ Resources:
         Speakeasy:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: /hello
-            Method: get
-      Role: !GetAtt [ SpeakeasyExecutionRole, Arn ]
+            Path: /synthesize-voice
+            Method: post
+      Role: !GetAtt [ SynthesizeSpeechFunctionRole, Arn ]
 
-  SpeakeasyExecutionRole:
+  SynthesizeSpeechFunctionRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
@@ -42,17 +42,55 @@ Resources:
         - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
         - arn:aws:iam::aws:policy/AmazonPollyFullAccess
 
+  ListAvailableLanguagesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: SpeakeasyFunctions
+      Handler: com.dbarishic.speakeasy.ListAvailableLanguagesFunction::handleRequest
+      Runtime: java8
+      MemorySize: 192
+      Environment:
+        Variables:
+          PARAM1: VALUE
+      Events:
+        Speakeasy:
+          Type: Api
+          Properties:
+            Path: /get-languages
+            Method: get
+      Role: !GetAtt [ ListAvailableLanguagesFunctionRole, Arn ]
+
+  ListAvailableLanguagesFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: "sts:AssumeRole"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AWSLambdaExecute
+        - arn:aws:iam::aws:policy/AmazonPollyFullAccess
+
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
   # Find out more about other implicit resources you can reference within SAM
   # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
   SpeakeasyApi:
-    Description: "API Gateway endpoint URL for Prod stage for Speakeasy function"
+    Description: "API Gateway endpoint URL for Prod stage for Speakeasy functions"
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
-  SpeakeasyFunction:
-    Description: "Speakeasy Lambda Function ARN"
-    Value: !GetAtt SpeakeasyFunction.Arn
-  SpeakeasyFunctionIamRole:
-    Description: "IAM Execution Role created for Speakeasy function"
-    Value: !GetAtt SpeakeasyExecutionRole.Arn
+  SynthesizeSpeechFunction:
+    Description: "SynthesizeSpeechFunction Lambda Function ARN"
+    Value: !GetAtt SynthesizeSpeechFunction.Arn
+  SynthesizeSpeechFunctionIamRole:
+    Description: "IAM Execution Role created for SynthesizeSpeechFunction function"
+    Value: !GetAtt SynthesizeSpeechFunctionRole.Arn
+  ListAvailableLanguagesFunction:
+    Description: "ListAvailableLanguagesFunction Lambda Function ARN"
+    Value: !GetAtt ListAvailableLanguagesFunction.Arn
+  ListAvailableLanguagesFunctionRole:
+    Description: "IAM Execution Role created for ListAvailableLanguagesFunction"
+    Value: !GetAtt ListAvailableLanguagesFunctionRole.Arn
