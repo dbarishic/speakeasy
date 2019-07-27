@@ -4,8 +4,12 @@ import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Objects;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class S3Helper {
+    private static Logger log = LoggerFactory.getLogger(S3Helper.class);
 
     private S3Helper() {
         throw new IllegalStateException("Utility class, do not instantiate.");
@@ -16,7 +20,7 @@ public class S3Helper {
         getRequestBuilder.bucket(bucketName);
         getRequestBuilder.key(path);
 
-        return getUrl(getRequestBuilder.build()).toExternalForm();
+        return Objects.requireNonNull(getUrl(getRequestBuilder.build())).toExternalForm();
     }
     public static URL getUrl(GetObjectRequest request) {
         StringBuilder urlBuilder = new StringBuilder();
@@ -32,7 +36,7 @@ public class S3Helper {
             url = new URL(urlBuilder.toString());
             return url;
         } catch (MalformedURLException e) {
-
+            log.debug("context", e);
         }
         return null;
     }

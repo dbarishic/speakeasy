@@ -1,5 +1,7 @@
 package com.dbarishic.speakeasy;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.http.apache.ApacheHttpClient;
 import software.amazon.awssdk.regions.Region;
@@ -14,6 +16,9 @@ import java.util.stream.Collectors;
 
 
 public class ListAvailableLanguagesFunction {
+
+    Logger log = LoggerFactory.getLogger(ListAvailableLanguagesFunction.class);
+
     private PollyClient client = PollyClient.builder()
             .credentialsProvider(DefaultCredentialsProvider.create())
             .region(Region.EU_WEST_1)
@@ -40,7 +45,7 @@ public class ListAvailableLanguagesFunction {
                 languageNames = voices.stream().map(Voice::languageName).collect(Collectors.toSet());
             } while (nextToken != null);
         } catch (Exception e) {
-            System.err.println("Exception caught: " + e);
+            log.debug("context", e);
         }
 
         return languageNames;
