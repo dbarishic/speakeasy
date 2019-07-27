@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 
 public class ListAvailableLanguagesFunction {
 
-    Logger log = LoggerFactory.getLogger(ListAvailableLanguagesFunction.class);
+    private static Logger log = LoggerFactory.getLogger(ListAvailableLanguagesFunction.class);
 
     private PollyClient client = PollyClient.builder()
             .credentialsProvider(DefaultCredentialsProvider.create())

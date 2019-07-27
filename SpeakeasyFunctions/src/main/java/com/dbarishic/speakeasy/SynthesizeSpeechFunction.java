@@ -24,7 +24,7 @@ import java.util.concurrent.ExecutionException;
  */
 public class SynthesizeSpeechFunction {
 
-    Logger log = LoggerFactory.getLogger(SynthesizeSpeechFunction.class);
+    private static Logger log = LoggerFactory.getLogger(SynthesizeSpeechFunction.class);
 
     private final PollyClient myPollyClient = PollyClient.builder()
             .credentialsProvider(DefaultCredentialsProvider.create())
