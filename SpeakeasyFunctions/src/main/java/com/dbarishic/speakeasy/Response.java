@@ -1,9 +1,5 @@
 package com.dbarishic.speakeasy;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * POJO containing response object for API Gateway.
  */

@@ -15,9 +15,10 @@ Resources:
       CodeUri: SpeakeasyFunctions
       Handler: com.dbarishic.speakeasy.SynthesizeSpeechFunction::handleRequest
       Runtime: java8
+      MemorySize: 192
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
         Variables:
-          PARAM1: VALUE
+          BUCKET_NAME: speakeasy-mp3
       Events:
         Speakeasy:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
@@ -81,7 +82,7 @@ Outputs:
   # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
   SpeakeasyApi:
     Description: "API Gateway endpoint URL for Prod stage for Speakeasy functions"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/synthesize-voice/"
   SynthesizeSpeechFunction:
     Description: "SynthesizeSpeechFunction Lambda Function ARN"
     Value: !GetAtt SynthesizeSpeechFunction.Arn

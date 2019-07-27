@@ -7,10 +7,6 @@ public class Request {
     private String language;
     private String message;
 
-    public Request() {
-
-    }
-
     public String getLanguage() {
         return language;
     }

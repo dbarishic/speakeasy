@@ -5,6 +5,7 @@
       <list>
         <option value="$PROJECT_DIR$/HelloWorldFunction/pom.xml" />
         <option value="$PROJECT_DIR$/SpeakeasyFunction/pom.xml" />
+        <option value="$PROJECT_DIR$/SpeakeasyFunctions/pom.xml" />
       </list>
     </option>
   </component>
