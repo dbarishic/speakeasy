@@ -12,9 +12,7 @@ import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.http.apache.ApacheHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.polly.PollyClient;
-import software.amazon.awssdk.services.polly.model.OutputFormat;
-import software.amazon.awssdk.services.polly.model.SynthesizeSpeechRequest;
-import software.amazon.awssdk.services.polly.model.VoiceId;
+import software.amazon.awssdk.services.polly.model.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -48,9 +46,15 @@ public class SynthesizeSpeechFunction implements RequestHandler<APIGatewayProxyR
             log.debug("context", e);
         }
 
+        DescribeVoicesRequest describeVoicesRequest = DescribeVoicesRequest.builder()
+                .languageCode(request.getLanguage())
+                .build();
+        VoiceId voiceId = myPollyClient.describeVoices(describeVoicesRequest).voices().get(0).id();
+
         final SynthesizeSpeechRequest synthesizeSpeechRequest = SynthesizeSpeechRequest.builder()
+                .languageCode(request.getLanguage())
+                .voiceId(voiceId)
                 .outputFormat(OutputFormat.MP3)
-                .voiceId(VoiceId.JOANNA)
                 .text(request.getMessage())
                 .build();
 

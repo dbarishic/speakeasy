@@ -1,5 +1,8 @@
 package com.dbarishic.speakeasy;
 
+import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,28 +16,26 @@ import software.amazon.awssdk.services.polly.model.DescribeVoicesRequest;
 import software.amazon.awssdk.services.polly.model.DescribeVoicesResponse;
 import software.amazon.awssdk.services.polly.model.Voice;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
-public class ListAvailableLanguagesFunction {
+public class ListAvailableLanguagesFunction implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
     private static Logger log = LoggerFactory.getLogger(ListAvailableLanguagesFunction.class);
 
     private final PollyClient client = PollyClient.builder()
-            .credentialsProvider(DefaultCredentialsProvider.create())
             .region(Region.EU_WEST_1)
+            .credentialsProvider(DefaultCredentialsProvider.create())
             .httpClient(ApacheHttpClient.builder().build())
             .build();
 
-    public APIGatewayProxyResponseEvent handleRequest() {
+    @Override
+    public APIGatewayProxyResponseEvent handleRequest (APIGatewayProxyRequestEvent requestEvent, Context context) {
         final ObjectMapper mapper = new ObjectMapper();
 
-        final Set<String> languages = getlanguageNames();
-        final Map<String, Set<String>> data = new HashMap<>();
+        final Map<String, String> languages = getLanguages();
+        final Map<String, Map<String, String>> data = new HashMap<>();
         data.put("languages", languages);
 
         String dataJson = null;
@@ -52,11 +53,11 @@ public class ListAvailableLanguagesFunction {
         return response;
     }
 
-    private Set<String> getlanguageNames() {
+    private Map<String, String> getLanguages() {
         final DescribeVoicesRequest allVoicesRequest = DescribeVoicesRequest.builder().build();
 
-        final Set<Voice> voices = new HashSet<>();
-        Set<String> languageNames = new HashSet<>();
+        final List<Voice> voices = new ArrayList<>();
+        Map<String, String> languages = new HashMap<>();
         try {
             String nextToken;
             do {
@@ -64,12 +65,13 @@ public class ListAvailableLanguagesFunction {
                 nextToken = allVoicesResult.nextToken();
                 allVoicesResult.toBuilder().nextToken(nextToken);
                 voices.addAll(allVoicesResult.voices());
-                languageNames = voices.stream().map(Voice::languageName).collect(Collectors.toSet());
+                List<Voice> voicesFiltered = io.vavr.collection.List.ofAll(voices).distinctBy(Voice::languageCode).toJavaList();
+                languages = voicesFiltered.stream().collect(Collectors.toMap(Voice::languageName, Voice::languageCodeAsString));
             } while (nextToken != null);
         } catch (Exception e) {
             log.debug("context", e);
         }
 
-        return languageNames;
+        return languages;
     }
 }
