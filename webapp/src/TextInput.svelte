@@ -3,17 +3,13 @@
   import Icon from "fa-svelte";
   import { faTimes, faVolumeUp } from "@fortawesome/free-solid-svg-icons";
 
+  import SynthesizeControls from "./SynthesizeControls.svelte";
+
   let clearTextIcon = faTimes;
   let synthesizeSpeechIcon = faVolumeUp;
   let textToTranslate = "";
   let textarea;
   let selectedLanguage;
-
-  let languages = [
-    { id: 1, text: '<span class="flag-icon flag-icon-mx"></span> Español' },
-    { id: 2, text: `de` },
-    { id: 3, text: `dgd` }
-  ];
 
   onMount(() => {
     textarea.select();
@@ -80,17 +76,17 @@
     box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
   }
 
-  .synthesize-controls {
-    float: left;
-  }
-
   .clearText {
     position: absolute;
     top: 0px;
     right: 0px;
-    color: #676778;
+    color: #333;
     font-size: 1.5rem;
     padding-right: 0.5%;
+  }
+
+  .clearText:hover {
+    color: #555;
   }
 
   .clearText .tooltiptext {
@@ -202,20 +198,7 @@
         on:input={autoResizeTextArea} />
     </div>
 
-    <div class="synthesize-controls">
-      <select value={selectedLanguage}>
-        {#each languages as language}
-          <option value={language}>
-            {@html language.text}
-          </option>
-        {/each}
-      </select>
-      {#if textToTranslate}
-        <a href="#a">
-          <Icon icon={faVolumeUp} />
-        </a>
-      {/if}
-    </div>
+    <SynthesizeControls {textToTranslate} />
   </div>
 </div>
 
