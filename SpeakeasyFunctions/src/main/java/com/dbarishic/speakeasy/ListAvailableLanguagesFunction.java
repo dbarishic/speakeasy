@@ -34,8 +34,8 @@ public class ListAvailableLanguagesFunction implements RequestHandler<APIGateway
     public APIGatewayProxyResponseEvent handleRequest (APIGatewayProxyRequestEvent requestEvent, Context context) {
         final ObjectMapper mapper = new ObjectMapper();
 
-        final Map<String, String> languages = getLanguages();
-        final Map<String, Map<String, String>> data = new HashMap<>();
+        final List<Language> languages = getLanguages();
+        final Map<String, List<Language>> data = new HashMap<>();
         data.put("languages", languages);
 
         String dataJson = null;
@@ -45,7 +45,11 @@ public class ListAvailableLanguagesFunction implements RequestHandler<APIGateway
             log.debug("context", e);
         }
 
+        final Map<String, String> headers = new HashMap<>();
+        headers.put("Access-Control-Allow-Origin", "http://localhost:5000"); // testing only, TODO: replace localhost with PROD domain
+
         final APIGatewayProxyResponseEvent response = new APIGatewayProxyResponseEvent();
+        response.setHeaders(headers);
         response.setBody(dataJson);
         response.setIsBase64Encoded(false);
         response.setStatusCode(200);
@@ -53,11 +57,11 @@ public class ListAvailableLanguagesFunction implements RequestHandler<APIGateway
         return response;
     }
 
-    private Map<String, String> getLanguages() {
+    private List<Language> getLanguages() {
         final DescribeVoicesRequest allVoicesRequest = DescribeVoicesRequest.builder().build();
 
         final List<Voice> voices = new ArrayList<>();
-        Map<String, String> languages = new HashMap<>();
+        Map<String, String> languagesMap = new HashMap<>();
         try {
             String nextToken;
             do {
@@ -66,12 +70,17 @@ public class ListAvailableLanguagesFunction implements RequestHandler<APIGateway
                 allVoicesResult.toBuilder().nextToken(nextToken);
                 voices.addAll(allVoicesResult.voices());
                 List<Voice> voicesFiltered = io.vavr.collection.List.ofAll(voices).distinctBy(Voice::languageCode).toJavaList();
-                languages = voicesFiltered.stream().collect(Collectors.toMap(Voice::languageName, Voice::languageCodeAsString));
+                languagesMap = voicesFiltered.stream().collect(Collectors.toMap(Voice::languageName, Voice::languageCodeAsString));
             } while (nextToken != null);
         } catch (Exception e) {
             log.debug("context", e);
         }
 
+        List<Language> languages = new ArrayList<>();
+        languagesMap.forEach((key, value) -> {
+            // key = langName, value = langCode
+            languages.add(new Language(key, value));
+        });
         return languages;
     }
 }

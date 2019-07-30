@@ -2,24 +2,41 @@
   import Icon from "fa-svelte";
   import { faVolumeUp } from "@fortawesome/free-solid-svg-icons";
 
+  const BASE_API_URL =
+    "https://v3ui450jhi.execute-api.eu-west-1.amazonaws.com/Prod";
+
   export let textToTranslate = "";
 
-  let languages = [
-    { id: 1, text: 'Español' },
-    { id: 2, text: `de` },
-    { id: 3, text: `dgd` }
-  ];
-
+  let languages;
   let selectedLanguage;
 
-  const synthesize = () => {
-    console.log(
-      "SYNTHESIZE CLICKED with LANG=${" +
-        selectedLanguage.text +
-        "} AND TEXT=${" +
-        textToTranslate +
-        "}"
-    );
+  document.addEventListener("DOMContentLoaded", () => {
+    getLanguagesAsync();
+  });
+
+  const synthesize = async () => {
+    if (textToTranslate.trim.length > 3000) {
+      return;
+    }
+
+    let json = {
+      language: selectedLanguage.code,
+      message: textToTranslate
+    };
+
+    const response = await fetch(BASE_API_URL + "/synthesize-voice", {
+      method: "post",
+      body: json
+    });
+
+    const data = await response.json();
+    console.log(data);
+  };
+
+  const getLanguagesAsync = async () => {
+    const response = await fetch(BASE_API_URL + "/get-languages");
+    const data = await response.json();
+    languages = data.languages;
   };
 </script>
 
@@ -41,17 +58,19 @@
   }
 </style>
 
-<div class="synthesize-controls">
-  <select bind:value={selectedLanguage}>
-    {#each languages as language}
-      <option value={language}>
-        {@html language.text}
-      </option>
-    {/each}
-  </select>
-  {#if textToTranslate}
-    <div class="synthesize-button" on:click={synthesize}>
-      <Icon icon={faVolumeUp} />
-    </div>
-  {/if}
-</div>
+{#if languages}
+  <div class="synthesize-controls">
+    <select bind:value={selectedLanguage}>
+      {#each languages as language}
+        <option value={language}>
+          {@html language.name}
+        </option>
+      {/each}
+    </select>
+    {#if textToTranslate}
+      <div class="synthesize-button" on:click={synthesize}>
+        <Icon icon={faVolumeUp} />
+      </div>
+    {/if}
+  </div>
+{/if}

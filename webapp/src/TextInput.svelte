@@ -10,12 +10,19 @@
   let textToTranslate = "";
   let textarea;
   let selectedLanguage;
+  let textLimitExceeded = false;
 
   onMount(() => {
     textarea.select();
   });
 
   const autoResizeTextArea = () => {
+    if (textToTranslate.length > 3000) {
+      textLimitExceeded = true;
+    } else {
+      textLimitExceeded = false;
+    }
+
     textarea.style.height = "";
     textarea.style.height = textarea.scrollHeight + "px";
   };
@@ -29,6 +36,28 @@
 </script>
 
 <style>
+  .error-footer {
+    display: flex;
+    justify-content: left;
+    align-items: center;
+    font-family: "Overpass";
+    font-weight: 400;
+    font-size: 0.9rem;
+    z-index: 2;
+    left: 0px;
+    bottom: 0px;
+    position: fixed;
+    background-color: #323232;
+    width: 100%;
+    min-height: 48px;
+    margin-right: 4px;
+  }
+
+  .error-message {
+    margin-left: 1%;
+    color: white;
+    display: inline-block;
+  }
   a {
     color: #676778;
     text-decoration: none;
@@ -201,6 +230,12 @@
     <SynthesizeControls {textToTranslate} />
   </div>
 </div>
+
+{#if textLimitExceeded}
+  <div class="error-footer">
+    <span class="error-message">Character limit: 3000</span>
+  </div>
+{/if}
 
 <link
   href="https://fonts.googleapis.com/css?family=Overpass:100"

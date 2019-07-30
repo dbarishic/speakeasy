@@ -18,6 +18,8 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Handler for requests to Lambda function.
@@ -66,6 +68,13 @@ public class SynthesizeSpeechFunction implements RequestHandler<APIGatewayProxyR
         // construct response
         final APIGatewayProxyResponseEvent response = new APIGatewayProxyResponseEvent();
         final String synthesizedSpeechBase64String = fileToBase64(synthesizedSpeechMP3);
+        final Map<String, String> headers = new HashMap<>();
+        headers.put("Access-Control-Allow-Origin", "http://localhost:5000"); // testing only, TODO: replace localhost with PROD domain
+        headers.put("Access-Control-Allow-Headers", "*"); // testing only, TODO: replace * with actual allowed headers domain
+        headers.put("Access-Control-Allow-Methods", "*");
+
+
+        response.setHeaders(headers);
         response.setIsBase64Encoded(true);
         response.setBody(synthesizedSpeechBase64String);
         response.setStatusCode(200);
