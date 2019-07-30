@@ -3,7 +3,7 @@
   import { faVolumeUp } from "@fortawesome/free-solid-svg-icons";
 
   const BASE_API_URL =
-    "https://v3ui450jhi.execute-api.eu-west-1.amazonaws.com/Prod";
+    "https://9cyxehf46g.execute-api.eu-west-1.amazonaws.com/Prod";
 
   export let textToTranslate = "";
 
@@ -19,22 +19,31 @@
       return;
     }
 
-    let json = {
+    const json = {
       language: selectedLanguage.code,
       message: textToTranslate
     };
 
     const response = await fetch(BASE_API_URL + "/synthesize-voice", {
       method: "post",
-      body: json
+      cache: "force-cache",
+      body: JSON.stringify(json),
+      headers: {
+        "Accept": "audio/mpeg",
+        "Content-Type": "application/json"
+      }
     });
 
-    const data = await response.json();
-    console.log(data);
+    const audioAsBase64 = await response.text();
+    var audio = new Audio("data:audio/mpeg;base64," + audioAsBase64);
+    audio.play();
   };
 
   const getLanguagesAsync = async () => {
-    const response = await fetch(BASE_API_URL + "/get-languages");
+    const response = await fetch(BASE_API_URL + "/get-languages", {
+      method: "get",
+      cache: "force-cache"
+    });
     const data = await response.json();
     languages = data.languages;
   };

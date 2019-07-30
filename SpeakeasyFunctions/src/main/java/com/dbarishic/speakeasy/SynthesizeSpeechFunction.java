@@ -71,7 +71,8 @@ public class SynthesizeSpeechFunction implements RequestHandler<APIGatewayProxyR
         final Map<String, String> headers = new HashMap<>();
         headers.put("Access-Control-Allow-Origin", "http://localhost:5000"); // testing only, TODO: replace localhost with PROD domain
         headers.put("Access-Control-Allow-Headers", "*"); // testing only, TODO: replace * with actual allowed headers domain
-        headers.put("Access-Control-Allow-Methods", "*");
+        headers.put("Access-Control-Allow-Methods", "OPTIONS, POST");
+        headers.put("Content-Type", "audio/mpeg");
 
 
         response.setHeaders(headers);
