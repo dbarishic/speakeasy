@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 
 public class ListAvailableLanguagesFunction implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
-
+    
     private static Logger log = LoggerFactory.getLogger(ListAvailableLanguagesFunction.class);
 
     private final PollyClient client = PollyClient.builder()
@@ -31,7 +31,7 @@ public class ListAvailableLanguagesFunction implements RequestHandler<APIGateway
             .build();
 
     @Override
-    public APIGatewayProxyResponseEvent handleRequest (APIGatewayProxyRequestEvent requestEvent, Context context) {
+    public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent requestEvent, Context context) {
         final ObjectMapper mapper = new ObjectMapper();
 
         final List<Language> languages = getLanguages();
@@ -46,7 +46,7 @@ public class ListAvailableLanguagesFunction implements RequestHandler<APIGateway
         }
 
         final Map<String, String> headers = new HashMap<>();
-        headers.put("Access-Control-Allow-Origin", "http://localhost:5000"); // testing only, TODO: replace localhost with PROD domain
+        headers.put("Access-Control-Allow-Origin", "*");
 
         final APIGatewayProxyResponseEvent response = new APIGatewayProxyResponseEvent();
         response.setHeaders(headers);

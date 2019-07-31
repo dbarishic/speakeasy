@@ -46,6 +46,14 @@ public class SynthesizeSpeechFunction implements RequestHandler<APIGatewayProxyR
             request = mapper.readValue(requestEvent.getBody(), Request.class);
         } catch (IOException e) {
             log.debug("context", e);
+        } catch (NullPointerException e) {
+            return null;
+        }
+
+        try {
+            String language = request.getLanguage();
+        } catch (NullPointerException e) {
+            return null;
         }
 
         DescribeVoicesRequest describeVoicesRequest = DescribeVoicesRequest.builder()
@@ -69,8 +77,8 @@ public class SynthesizeSpeechFunction implements RequestHandler<APIGatewayProxyR
         final APIGatewayProxyResponseEvent response = new APIGatewayProxyResponseEvent();
         final String synthesizedSpeechBase64String = fileToBase64(synthesizedSpeechMP3);
         final Map<String, String> headers = new HashMap<>();
-        headers.put("Access-Control-Allow-Origin", "http://localhost:5000"); // testing only, TODO: replace localhost with PROD domain
-        headers.put("Access-Control-Allow-Headers", "*"); // testing only, TODO: replace * with actual allowed headers domain
+        headers.put("Access-Control-Allow-Origin", "*");
+        headers.put("Access-Control-Allow-Headers", "Content-Type, Accept");
         headers.put("Access-Control-Allow-Methods", "OPTIONS, POST");
         headers.put("Content-Type", "audio/mpeg");
 

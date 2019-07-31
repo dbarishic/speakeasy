@@ -29,23 +29,36 @@
       cache: "force-cache",
       body: JSON.stringify(json),
       headers: {
-        "Accept": "audio/mpeg",
+        Accept: "audio/mpeg",
         "Content-Type": "application/json"
       }
     });
 
     const audioAsBase64 = await response.text();
+
     var audio = new Audio("data:audio/mpeg;base64," + audioAsBase64);
     audio.play();
   };
 
   const getLanguagesAsync = async () => {
+    const cachedLanguages = sessionStorage.getItem("languages");
+    console.log(cachedLanguages);
+    if (cachedLanguages !== null) {
+      languages = JSON.parse(cachedLanguages);
+      return;
+    }
+
     const response = await fetch(BASE_API_URL + "/get-languages", {
       method: "get",
-      cache: "force-cache"
+      cache: "force-cache",
+      headers: {
+        Accept: "audio/mpeg"
+      }
     });
     const data = await response.json();
     languages = data.languages;
+
+    sessionStorage.setItem("languages", JSON.stringify(languages));
   };
 </script>
 

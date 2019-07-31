@@ -11,8 +11,8 @@ Globals:
   Api:
     Cors:
       AllowMethods: "'*'"
-      AllowHeaders: "'*'"
-      AllowOrigin: "'http://localhost:5000'"
+      AllowHeaders: "'Content-type, Accept'"
+      AllowOrigin: "'*'"
 
 Resources:
   SynthesizeSpeechFunction:
@@ -33,7 +33,7 @@ Resources:
           Properties:
             Path: /synthesize-voice
             Method: post
-            
+
       Role: !GetAtt [ SynthesizeSpeechFunctionRole, Arn ]
 
   SynthesizeSpeechFunctionRole:
