@@ -17,9 +17,7 @@ import software.amazon.awssdk.services.polly.model.*;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Handler for requests to Lambda function.
@@ -47,13 +45,19 @@ public class SynthesizeSpeechFunction implements RequestHandler<APIGatewayProxyR
         } catch (IOException e) {
             log.debug("context", e);
         } catch (NullPointerException e) {
+            log.debug("context", e);
             return null;
         }
 
         try {
-            String language = request.getLanguage();
+            String source = request.getSource();
+
+            if (source.toLowerCase().equals("cloudwatch")) {
+                log.info("CLOUDWATCH WARM-UP EXECUTION");
+                return null;
+            }
         } catch (NullPointerException e) {
-            return null;
+            log.info("context", e);
         }
 
         DescribeVoicesRequest describeVoicesRequest = DescribeVoicesRequest.builder()

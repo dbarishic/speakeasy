@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 
 public class ListAvailableLanguagesFunction implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
-    
+
     private static Logger log = LoggerFactory.getLogger(ListAvailableLanguagesFunction.class);
 
     private final PollyClient client = PollyClient.builder()
