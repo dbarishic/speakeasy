@@ -16,11 +16,13 @@ import software.amazon.awssdk.services.polly.model.DescribeVoicesRequest;
 import software.amazon.awssdk.services.polly.model.DescribeVoicesResponse;
 import software.amazon.awssdk.services.polly.model.Voice;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
 
 public class ListAvailableLanguagesFunction implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+
 
     private static Logger log = LoggerFactory.getLogger(ListAvailableLanguagesFunction.class);
 
@@ -33,6 +35,19 @@ public class ListAvailableLanguagesFunction implements RequestHandler<APIGateway
     @Override
     public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent requestEvent, Context context) {
         final ObjectMapper mapper = new ObjectMapper();
+
+        Request request = new Request();
+        try {
+            request = mapper.readValue(requestEvent.getBody(), Request.class);
+
+            String source = request.getSource();
+            if (source.equals("cloudwatch")) {
+                log.info("CLOUDWATCH Warm-Up invocation!");
+                return new APIGatewayProxyResponseEvent();
+            }
+        } catch (IOException | NullPointerException e) {
+            log.debug("context", e);
+        }
 
         final List<Language> languages = getLanguages();
         final Map<String, List<Language>> data = new HashMap<>();

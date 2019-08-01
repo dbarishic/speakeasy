@@ -67,7 +67,7 @@ Resources:
           Type: Api
           Properties:
             Path: /get-languages
-            Method: get
+            Method: post
       Role: !GetAtt [ ListAvailableLanguagesFunctionRole, Arn ]
 
   ListAvailableLanguagesFunctionRole:

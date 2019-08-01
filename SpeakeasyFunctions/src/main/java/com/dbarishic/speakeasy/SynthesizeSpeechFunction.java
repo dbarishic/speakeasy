@@ -54,7 +54,7 @@ public class SynthesizeSpeechFunction implements RequestHandler<APIGatewayProxyR
 
             if (source.toLowerCase().equals("cloudwatch")) {
                 log.info("CLOUDWATCH WARM-UP EXECUTION");
-                return null;
+                return new APIGatewayProxyResponseEvent();
             }
         } catch (NullPointerException e) {
             log.info("context", e);

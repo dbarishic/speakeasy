@@ -25,6 +25,8 @@
       message: textToTranslate
     };
 
+    loading = true;
+
     const response = await fetch(BASE_API_URL + "/synthesize-voice", {
       method: "post",
       cache: "force-cache",
@@ -35,7 +37,6 @@
       }
     });
 
-    loading = true;
     const audioAsBase64 = await response.text();
 
     loading = false;
@@ -52,7 +53,7 @@
     }
 
     const response = await fetch(BASE_API_URL + "/get-languages", {
-      method: "get",
+      method: "post",
       cache: "force-cache",
       headers: {
         Accept: "audio/mpeg"
@@ -67,10 +68,14 @@
 
 <style>
   .synthesize-controls {
+    display: flex;
     float: left;
+    justify-content: left;
+    align-content: left;
   }
 
   .synthesize-button {
+    margin-left: 5px;
     display: inline-block;
     vertical-align: bottom;
     font-size: 2rem;
@@ -82,43 +87,55 @@
     color: #555;
   }
 
-  .lds-facebook {
-    display: inline-block;
-    position: relative;
-    width: 40px;
-    height: 40px;
-  }
-  .lds-facebook div {
-    display: inline-block;
-    position: absolute;
-    left: 6px;
-    width: 13px;
-    background: black;
-    animation: lds-facebook 1.2s cubic-bezier(0, 0.5, 0.5, 1) infinite;
-  }
-  .lds-facebook div:nth-child(1) {
-    left: 6px;
-    animation-delay: -0.24s;
-  }
-  .lds-facebook div:nth-child(2) {
-    left: 26px;
-    animation-delay: -0.12s;
-  }
-  .lds-facebook div:nth-child(3) {
-    left: 45px;
-    animation-delay: 0;
-  }
-  @keyframes lds-facebook {
-    0% {
-      top: 6px;
-      height: 51px;
-    }
-    50%,
-    100% {
-      top: 19px;
-      height: 26px;
-    }
-  }
+            @keyframes lds-rolling {
+            0% {
+              -webkit-transform: translate(-50%, -50%) rotate(0deg);
+              transform: translate(-50%, -50%) rotate(0deg);
+            }
+            100% {
+              -webkit-transform: translate(-50%, -50%) rotate(360deg);
+              transform: translate(-50%, -50%) rotate(360deg);
+            }
+          }
+          @-webkit-keyframes lds-rolling {
+            0% {
+              -webkit-transform: translate(-50%, -50%) rotate(0deg);
+              transform: translate(-50%, -50%) rotate(0deg);
+            }
+            100% {
+              -webkit-transform: translate(-50%, -50%) rotate(360deg);
+              transform: translate(-50%, -50%) rotate(360deg);
+            }
+          }
+          .lds-rolling {
+            position: relative;
+          }
+          .lds-rolling div,
+          .lds-rolling div:after {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            border: 20px solid #333;
+            border-top-color: transparent;
+            border-radius: 50%;
+          }
+          .lds-rolling div {
+            -webkit-animation: lds-rolling 1s linear infinite;
+            animation: lds-rolling 1s linear infinite;
+            top: 100px;
+            left: 100px;
+          }
+          .lds-rolling div:after {
+            -webkit-transform: rotate(90deg);
+            transform: rotate(90deg);
+          }
+          .lds-rolling {
+            width: 40px !important;
+            height: 40px !important;
+            -webkit-transform: translate(-20px, -20px) scale(0.2)
+              translate(20px, 20px);
+            transform: translate(-20px, -20px) scale(0.2) translate(20px, 20px);
+          }
 </style>
 
 {#if languages}
@@ -131,15 +148,18 @@
       {/each}
     </select>
     {#if textToTranslate && !loading}
-      <div class="synthesize-button" on:click={synthesize} on:touch={synthesize}>
+      <div
+        class="synthesize-button"
+        on:click={synthesize}
+        on:touch={synthesize}>
         <Icon icon={faVolumeUp} />
       </div>
     {/if}
     {#if loading}
-      <div class="lds-facebook">
-        <div />
-        <div />
-        <div />
+      <div class="lds-css ng-scope">
+        <div style="width:100%;height:100%" class="lds-rolling">
+          <div />
+        </div>
       </div>
     {/if}
   </div>
