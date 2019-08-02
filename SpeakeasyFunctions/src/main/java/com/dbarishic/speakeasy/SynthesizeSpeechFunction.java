@@ -26,16 +26,18 @@ public class SynthesizeSpeechFunction implements RequestHandler<APIGatewayProxyR
 
     private static Logger log = LoggerFactory.getLogger(SynthesizeSpeechFunction.class);
 
-    private final PollyClient myPollyClient = PollyClient.builder()
+    private static final PollyClient myPollyClient = PollyClient.builder()
             .credentialsProvider(DefaultCredentialsProvider.create())
             .region(Region.EU_WEST_1)
             .httpClient(ApacheHttpClient.builder().build())
             .build();
 
+    private static final ObjectMapper mapper = new ObjectMapper();
+
+
     // Synthesize speech and return it as a base64 encoded string
     @Override
-    public APIGatewayProxyResponseEvent handleRequest (APIGatewayProxyRequestEvent requestEvent, Context context) {
-        final ObjectMapper mapper = new ObjectMapper();
+    public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent requestEvent, Context context) {
 
         // deconstruct request
         Request request = new Request();
@@ -45,19 +47,8 @@ public class SynthesizeSpeechFunction implements RequestHandler<APIGatewayProxyR
         } catch (IOException e) {
             log.debug("context", e);
         } catch (NullPointerException e) {
-            log.debug("context", e);
-            return null;
-        }
-
-        try {
-            String source = request.getSource();
-
-            if (source.toLowerCase().equals("cloudwatch")) {
-                log.info("CLOUDWATCH WARM-UP EXECUTION");
-                return new APIGatewayProxyResponseEvent();
-            }
-        } catch (NullPointerException e) {
-            log.info("context", e);
+            log.info("CLOUDWATCH WARM-UP INVOCATION");
+            return new APIGatewayProxyResponseEvent();
         }
 
         DescribeVoicesRequest describeVoicesRequest = DescribeVoicesRequest.builder()
@@ -69,7 +60,7 @@ public class SynthesizeSpeechFunction implements RequestHandler<APIGatewayProxyR
                 .languageCode(request.getLanguage())
                 .voiceId(voiceId)
                 .outputFormat(OutputFormat.MP3)
-                .text(request.getMessage())
+                .text(request.getText())
                 .build();
 
         final String fileName = "/tmp/" + LocalDateTime.now().toString() + ".mp3";

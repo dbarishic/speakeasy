@@ -26,27 +26,25 @@ public class ListAvailableLanguagesFunction implements RequestHandler<APIGateway
 
     private static Logger log = LoggerFactory.getLogger(ListAvailableLanguagesFunction.class);
 
-    private final PollyClient client = PollyClient.builder()
+    private static final PollyClient client = PollyClient.builder()
             .region(Region.EU_WEST_1)
             .credentialsProvider(DefaultCredentialsProvider.create())
             .httpClient(ApacheHttpClient.builder().build())
             .build();
 
+    private static final ObjectMapper mapper = new ObjectMapper();
+
     @Override
     public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent requestEvent, Context context) {
-        final ObjectMapper mapper = new ObjectMapper();
 
-        Request request = new Request();
         try {
+            Request request = new Request();
             request = mapper.readValue(requestEvent.getBody(), Request.class);
-
-            String source = request.getSource();
-            if (source.equals("cloudwatch")) {
-                log.info("CLOUDWATCH Warm-Up invocation!");
-                return new APIGatewayProxyResponseEvent();
-            }
-        } catch (IOException | NullPointerException e) {
+        } catch (IOException e) {
             log.debug("context", e);
+        } catch (NullPointerException e) {
+            log.info("CLOUDWATCH WARM-UP INVOCATION");
+            return new APIGatewayProxyResponseEvent();
         }
 
         final List<Language> languages = getLanguages();

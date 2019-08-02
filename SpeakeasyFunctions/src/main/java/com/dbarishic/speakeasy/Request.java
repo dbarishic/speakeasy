@@ -8,10 +8,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Request {
     private String language;
-    private String message;
-
-    // only needed to check if source is 'aws.events' and ignore the invocation
-    private String source;
+    private String text;
+    private String origin;
 
     public String getLanguage() {
         return language;
@@ -21,19 +19,19 @@ public class Request {
         this.language = language;
     }
 
-    public String getMessage() {
-        return message;
+    public String getText() {
+        return text;
     }
 
-    public void setMessage(String message) {
-        this.message = message;
+    public void setText(String text) {
+        this.text = text;
     }
 
-    public String getSource() {
-        return source;
+    public String getOrigin() {
+        return origin;
     }
 
-    public void setSource(String source) {
-        this.source = source;
+    public void setOrigin(String origin) {
+        this.origin = origin;
     }
 }
