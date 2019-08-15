@@ -4,6 +4,7 @@
   import { faTimes, faVolumeUp } from "@fortawesome/free-solid-svg-icons";
 
   import SynthesizeControls from "./SynthesizeControls.svelte";
+  import SynthesizeDocumentControls from "./SynthesizeDocumentControls.svelte";
 
   let clearTextIcon = faTimes;
   let synthesizeSpeechIcon = faVolumeUp;
@@ -208,35 +209,118 @@
       display: none;
     }
   }
+
+
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+main {
+  text-align: center;
+}
+
+p:not(:last-child) {
+  margin: 0 0 20px;
+}
+
+section {
+  display: none;
+  padding: 20px 0 0;
+}
+
+input {
+  display: none;
+}
+
+label {
+  font-family: "Overpass";
+  display: inline-block;
+  margin: 0 0 -1px;
+  padding: 15px 25px;
+  font-weight: 600;
+  text-align: center;
+  color: #abc;
+  border: 1px solid transparent;
+}
+
+label:hover {
+  color: #789;
+  cursor: pointer;
+}
+
+input:checked + label {
+  color: #000;
+  border-bottom: 2px solid #000;
+}
+
+#tab1:checked ~ #synthesize-text,
+#tab2:checked ~ #synthesize-document
+{
+  display: block;
+}
+
+@media screen and (max-width: 800px) {
+  label {
+    font-size: 0;
+  }
+
+  label:before {
+    margin: 0;
+    font-size: 18px;
+  }
+}
+@media screen and (max-width: 500px) {
+  label {
+    padding: 15px;
+  }
+}
+
 </style>
-
-<div class="container">
-  <div class="text-input-wrapper">
-    <div class="input-container {textToTranslate ? 'material-shadow' : ''}">
-      {#if textToTranslate}
-        <div on:click={clearText} class="clearText">
-          <Icon icon={clearTextIcon} />
-          <span class="tooltiptext">Clear text</span>
-        </div>
-      {/if}
-      <textarea
-        id="mainTextArea"
-        placeholder="Enter text here"
-        bind:this={textarea}
-        bind:value={textToTranslate}
-        on:input={autoResizeTextArea} />
-    </div>
-
-    <SynthesizeControls {textToTranslate} />
-  </div>
-</div>
-
-{#if textLimitExceeded}
-  <div class="error-footer">
-    <span class="error-message">Character limit: 3000</span>
-  </div>
-{/if}
 
 <link
   href="https://fonts.googleapis.com/css?family=Overpass:100"
   rel="stylesheet" />
+
+<main>
+
+  <input id="tab1" type="radio" name="tabs" checked />
+  <label for="tab1">Synthesize text</label>
+
+  <input id="tab2" type="radio" name="tabs" />
+  <label for="tab2">Synthesize document</label>
+
+  <section id="synthesize-text">
+    <div class="container">
+      <div class="text-input-wrapper">
+        <div class="input-container {textToTranslate ? 'material-shadow' : ''}">
+          {#if textToTranslate}
+            <div on:click={clearText} class="clearText">
+              <Icon icon={clearTextIcon} />
+              <span class="tooltiptext">Clear text</span>
+            </div>
+          {/if}
+          <textarea
+            id="mainTextArea"
+            placeholder="Enter text here"
+            bind:this={textarea}
+            bind:value={textToTranslate}
+            on:input={autoResizeTextArea} />
+        </div>
+
+        <SynthesizeControls {textToTranslate} />
+      </div>
+    </div>
+
+    {#if textLimitExceeded}
+      <div class="error-footer">
+        <span class="error-message">Character limit: 3000</span>
+      </div>
+    {/if}
+  </section>
+
+  <section id="synthesize-document">
+    <SynthesizeDocumentControls />
+  </section>
+</main>

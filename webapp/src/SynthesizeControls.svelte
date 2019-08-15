@@ -109,7 +109,7 @@
     display: flex;
     float: left;
     justify-content: left;
-    align-content: left;
+    margin-top: 2%;
   }
 
   .synthesize-button {
