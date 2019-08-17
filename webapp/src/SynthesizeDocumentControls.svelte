@@ -2,27 +2,38 @@
   import Dropzone from "dropzone";
   import "../node_modules/dropzone/dist/min/dropzone.min.css";
 
-  Dropzone.options.dropzoneUpload = {
-    paramName: "file", // The name that will be used to transfer the file
-    maxFilesize: 2, // MB,
-    dictDefaultMessage: "<strong>Drag and Drop pdf file</strong> <br\> or click to upload",
-    autoProcessQueue: false,
-    init: function() {
-      this.on("addedfile", function(file) {
-        if (this.files.length > 1) {
-          this.removeFile(this.files[0]);
-        }
-      });
-    }
+  Dropzone.autoDiscover = false;
+
+  document.addEventListener("DOMContentLoaded", () => {
+    var myDropzone = new Dropzone("div#dropzone-upload", {
+      url: "/file/post",
+      paramName: "file", // The name that will be used to transfer the file
+      maxFilesize: 2, // MB,
+      dictDefaultMessage:
+        "<strong>Drag and Drop pdf file</strong> <br> or click to upload",
+      autoProcessQueue: false,
+      init: function() {
+        this.on("addedfile", function(file) {
+          if (this.files.length > 1) {
+            this.removeFile(this.files[0]);
+          }
+        });
+      }
+    });
+  });
+
+  const submitForm = () => {
+    console.log("NOT IMPLEMENTED!");
+    alert("This feature is not implemented yet.");
   };
 </script>
 
 <style>
   .label {
-    text-align: left;
     font-size: 0.9rem;
     font-weight: 100;
     font-family: "Overpass";
+    margin: 0;
   }
 
   .container {
@@ -85,7 +96,7 @@
     flex-direction: column;
   }
 
-  .dropzone {
+  .dropzone-style {
     background: white;
     border-radius: 5px;
     border: 2px dashed rgb(0, 0, 0);
@@ -93,9 +104,20 @@
     margin-left: auto;
     margin-right: auto;
     min-width: 50%;
+    min-height: 20%;
+    flex: 1;
     margin-bottom: 3%;
   }
 
+  .submit-container {
+    margin-top: 20%;
+    margin-bottom: 20%;
+  }
+
+  form {
+    width: 50%;
+  }
+  
   @media (min-width: 320px) and (max-width: 480px) {
     .form__field {
       width: 305px;
@@ -106,36 +128,36 @@
     }
 
     .submit-container {
+      width: 100%;
       margin-top: 15%;
+      position: fixed;
+      bottom: 0;
+      margin-bottom: 15%;
     }
-  }
 
-  .submit-container {
-    margin-top: 4%;
+    form {
+      width: 100%;
+    }
   }
 </style>
 
 <div class="wrapper">
-  <form
-    action="/file-upload"
-    class="dropzone dropzone-preview form"
-    id="dropzone-upload" />
+  <form on:submit={submitForm} class="form">
+    <div id="dropzone-upload" class="dropzone dropzone-style" />
 
-  <div class="submit-container">
-    <p class="label">Where do we send the processed file?</p>
-    <div class="container">
-      <div class="container__item">
-        <input
-          type="email"
-          class="form__field"
-          placeholder="Your E-Mail Address" />
-        <button
-          type="button"
-          action="submit"
-          class="btn btn--primary btn--inside uppercase">
-          Submit
-        </button>
+    <div class="submit-container">
+      <p class="label">Where do we send the processed file?</p>
+      <div class="container">
+        <div class="container__item">
+          <input
+            type="email"
+            class="form__field"
+            placeholder="Your E-Mail Address" />
+          <button type="submit" class="btn btn--primary btn--inside uppercase">
+            Submit
+          </button>
+        </div>
       </div>
     </div>
-  </div>
+  </form>
 </div>
