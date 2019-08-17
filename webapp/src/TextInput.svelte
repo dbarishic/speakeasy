@@ -156,6 +156,49 @@
     visibility: visible;
   }
 
+  main {
+    text-align: center;
+  }
+
+  p:not(:last-child) {
+    margin: 0 0 20px;
+  }
+
+  section {
+    display: none;
+    padding: 20px 0 0;
+  }
+
+  input {
+    display: none;
+  }
+
+  label {
+    font-family: "Overpass";
+    display: inline-block;
+    margin: 0 0 -1px;
+    padding: 15px 25px;
+    font-weight: 600;
+    text-align: center;
+    color: #abc;
+    border: 1px solid transparent;
+  }
+
+  label:hover {
+    color: #789;
+    cursor: pointer;
+  }
+
+  input:checked + label {
+    color: #000;
+    border-bottom: 2px solid #000;
+  }
+
+  #tab1:checked ~ #synthesize-text,
+  #tab2:checked ~ #synthesize-document {
+    display: block;
+  }
+
   /* 
   ##Device = Tablets, Ipads (portrait)
   ##Screen = B/w 768px to 1024px
@@ -177,7 +220,7 @@
     ##Device = Low Resolution Tablets, Mobiles (Landscape)
     ##Screen = B/w 481px to 767px
   */
-  @media (min-width: 320px) and (max-width: 480px) {
+  @media (min-width: 481px) and (max-width: 767px) {
     .text-input-wrapper {
       width: 100%;
       padding-left: 7px;
@@ -186,6 +229,10 @@
 
     .clearText {
       width: 5%;
+    }
+
+    label {
+      padding: 15px;
     }
   }
 
@@ -208,75 +255,17 @@
     .tooltiptext {
       display: none;
     }
+
+    label {
+      padding: 15px;
+    }
   }
 
-
-*, *::before, *::after {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-main {
-  text-align: center;
-}
-
-p:not(:last-child) {
-  margin: 0 0 20px;
-}
-
-section {
-  display: none;
-  padding: 20px 0 0;
-}
-
-input {
-  display: none;
-}
-
-label {
-  font-family: "Overpass";
-  display: inline-block;
-  margin: 0 0 -1px;
-  padding: 15px 25px;
-  font-weight: 600;
-  text-align: center;
-  color: #abc;
-  border: 1px solid transparent;
-}
-
-label:hover {
-  color: #789;
-  cursor: pointer;
-}
-
-input:checked + label {
-  color: #000;
-  border-bottom: 2px solid #000;
-}
-
-#tab1:checked ~ #synthesize-text,
-#tab2:checked ~ #synthesize-document
-{
-  display: block;
-}
-
-@media screen and (max-width: 800px) {
-  label {
-    font-size: 0;
+  @media screen and (max-width: 500px) {
+    label {
+      padding: 15px;
+    }
   }
-
-  label:before {
-    margin: 0;
-    font-size: 18px;
-  }
-}
-@media screen and (max-width: 500px) {
-  label {
-    padding: 15px;
-  }
-}
-
 </style>
 
 <link
