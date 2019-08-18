@@ -1,4 +1,6 @@
 <script>
+  import Modal from "./Modal.svelte";
+
   import Dropzone from "dropzone";
   import "../node_modules/dropzone/dist/min/dropzone.min.css";
 
@@ -7,6 +9,13 @@
   let languages;
   let myDropzone;
 
+  let showModal = false;
+
+  // TODO: REMOVE TEMP TESTING VARS
+  let email = "";
+  let fileName = "";
+  let formInvalid = false;
+
   Dropzone.autoDiscover = false;
 
   document.addEventListener("DOMContentLoaded", async () => {
@@ -14,14 +23,17 @@
 
     myDropzone = new Dropzone("div#dropzone-upload", {
       url: "/file/post",
+      addRemoveLinks: true,
       paramName: "file", // The name that will be used to transfer the file
-      maxFilesize: 2, // MB,
+      maxFilesize: 50, // MB,
       acceptedFiles: "application/pdf",
       dictDefaultMessage:
         "<strong>Drag and Drop pdf file</strong> <br> or click to upload",
       autoProcessQueue: false,
       init: function() {
         this.on("addedfile", function(file) {
+          fileName = this.files[0].name;
+
           if (this.files.length > 1) {
             this.removeFile(this.files[0]);
           }
@@ -30,14 +42,30 @@
     });
   });
 
+  const validateForm = () => {
+    if (myDropzone.files.length < 1) {
+      formInvalid = true;
+      return false;
+    }
+
+    formInvalid = false;
+    showModal = true;
+  };
+
   const submitForm = () => {
     console.log("NOT IMPLEMENTED!");
-    alert("This feature is not implemented yet.");
 
-    if (myDropzone.files.length < 1) {
-      // show error message
-      return;
-    }
+    // TODO
+  };
+
+  const modalConfirmedHandler = () => {
+    console.log("Modal accepted!");
+    showModal = false;
+  };
+
+  const modalRejectedHandler = () => {
+    console.log("Modal rejected!");
+    showModal = false;
   };
 </script>
 
@@ -61,37 +89,6 @@
 
   .uppercase {
     text-transform: uppercase;
-  }
-
-  .btn {
-    display: inline-block;
-    background: transparent;
-    color: inherit;
-    font: inherit;
-    border: 0;
-    outline: 0;
-    padding: 0;
-    transition: all 200ms ease-in;
-    cursor: pointer;
-  }
-  .btn--primary {
-    background: #000;
-    color: #fff;
-    box-shadow: 0 0 10px 2px rgba(0, 0, 0, 0.1);
-    border-radius: 2px;
-    padding: 12px 36px;
-    font-family: "Overpass", sans-serif;
-    font-weight: 900;
-  }
-  .btn--primary:hover {
-    background: #333;
-  }
-  .btn--primary:active {
-    background: #333;
-    box-shadow: inset 0 0 10px 2px rgba(0, 0, 0, 0.2);
-  }
-  .btn--inside {
-    margin-left: -96px;
   }
 
   .form__field {
@@ -148,6 +145,13 @@
   .language-selection {
     text-align: left;
     margin: 0;
+  }
+
+  .file-missing-error-message {
+    color: red;
+    font-size: 12px;
+    font-family: "Overpass";
+    font-weight: 100;
   }
 
   @media (min-width: 320px) and (max-width: 480px) {
@@ -212,8 +216,10 @@
 </style>
 
 <div class="wrapper">
-  <form on:submit={submitForm} class="form">
-    <div id="dropzone-upload" class="dropzone dropzone-style">
+  <form on:submit|preventDefault={validateForm} class="form">
+    <div
+      id="dropzone-upload"
+      class="dropzone dropzone-style" />
       <div class="dz-default dz-message">
         <span>
           <strong>Drag and Drop pdf file</strong>
@@ -239,7 +245,10 @@
       <div class="container">
         <div class="container__item">
           <input
+            id="email-field"
+            bind:value={email}
             type="email"
+            required
             class="form__field"
             placeholder="Your E-Mail Address" />
           <button type="submit" class="btn btn--primary btn--inside uppercase">
@@ -247,6 +256,24 @@
           </button>
         </div>
       </div>
+      {#if formInvalid}
+        <p id="file-error" class="file-missing-error-message">
+          Please add a pdf file.
+        </p>
+      {/if}
+
     </div>
   </form>
 </div>
+
+{#if showModal}
+  <Modal on:confirm={modalConfirmedHandler} on:reject={modalRejectedHandler}>
+    <h2 slot="header">Are you sure?</h2>
+    <span>Are you sure you want to synthesize speech with</span>
+    <ul>
+      <li>Email: {email}</li>
+      <li>Language: {selectedLanguage.name}</li>
+      <li>File: {fileName}</li>
+    </ul>
+  </Modal>
+{/if}
