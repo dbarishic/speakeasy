@@ -217,9 +217,7 @@
 
 <div class="wrapper">
   <form on:submit|preventDefault={validateForm} class="form">
-    <div
-      id="dropzone-upload"
-      class="dropzone dropzone-style" />
+    <div id="dropzone-upload" class="dropzone dropzone-style">
       <div class="dz-default dz-message">
         <span>
           <strong>Drag and Drop pdf file</strong>
@@ -269,11 +267,13 @@
 {#if showModal}
   <Modal on:confirm={modalConfirmedHandler} on:reject={modalRejectedHandler}>
     <h2 slot="header">Are you sure?</h2>
-    <span>Are you sure you want to synthesize speech with</span>
-    <ul>
-      <li>Email: {email}</li>
-      <li>Language: {selectedLanguage.name}</li>
-      <li>File: {fileName}</li>
-    </ul>
+    <span>
+      Are you sure you want to synthesize
+      <strong>{fileName}</strong>
+      in
+      <strong>{selectedLanguage.name}</strong>
+      and send the processed file to
+      <strong>{email}</strong>
+    </span>
   </Modal>
 {/if}

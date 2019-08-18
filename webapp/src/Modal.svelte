@@ -11,7 +11,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.3);
+    background: rgba(0, 0, 0, 0.4);
   }
 
   .modal {
@@ -49,6 +49,7 @@
   .buttons-container {
     display: flex;
     justify-content: right;
+    margin-top: 2rem;
   }
 
   .confirm-button:active {
@@ -64,11 +65,10 @@
   }
 </style>
 
-<div class="modal-background" on:click={() => dispatch('close')} />
+<div class="modal-background" on:click={() => dispatch('reject')} />
 
 <div class="modal">
   <slot name="header" />
-  <hr />
   <slot />
 
   <div class="buttons-container">
@@ -77,6 +77,7 @@
     </button>
 
     <button
+      autofocus
       class="confirm-button btn btn--primary uppercase"
       on:click={() => dispatch('confirm')}>
       Confirm
