@@ -2,6 +2,8 @@
   import Icon from "fa-svelte";
   import { faVolumeUp } from "@fortawesome/free-solid-svg-icons";
 
+  import { getLanguagesAsync } from "./Utils.js";
+
   const BASE_API_URL =
     "https://9cyxehf46g.execute-api.eu-west-1.amazonaws.com/Prod";
 
@@ -11,8 +13,8 @@
   let selectedLanguage;
   let loading = false;
 
-  document.addEventListener("DOMContentLoaded", () => {
-    getLanguagesAsync();
+  document.addEventListener("DOMContentLoaded", async () => {
+    languages = await getLanguagesAsync();
   });
 
   const checkAndPlayFromCache = (language, text) => {
@@ -76,31 +78,6 @@
 
     var audio = new Audio("data:audio/mpeg;base64," + audioAsBase64);
     audio.play();
-  };
-
-  const getLanguagesAsync = async () => {
-    const cachedLanguages = sessionStorage.getItem("languages");
-    if (cachedLanguages !== null) {
-      languages = JSON.parse(cachedLanguages);
-      return;
-    }
-
-    const requestBody = {
-      origin: "speakeasy.FE"
-    };
-
-    const response = await fetch(BASE_API_URL + "/get-languages", {
-      method: "post",
-      cache: "force-cache",
-      body: JSON.stringify(requestBody),
-      headers: {
-        Accept: "audio/mpeg"
-      }
-    });
-    const data = await response.json();
-    languages = data.languages;
-
-    sessionStorage.setItem("languages", JSON.stringify(languages));
   };
 </script>
 

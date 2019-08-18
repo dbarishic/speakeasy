@@ -2,13 +2,20 @@
   import Dropzone from "dropzone";
   import "../node_modules/dropzone/dist/min/dropzone.min.css";
 
+  import { getLanguagesAsync } from "./Utils.js";
+  let selectedLanguage;
+  let languages;
+
   Dropzone.autoDiscover = false;
 
-  document.addEventListener("DOMContentLoaded", () => {
+  document.addEventListener("DOMContentLoaded", async () => {
+    languages = await getLanguagesAsync();
+
     var myDropzone = new Dropzone("div#dropzone-upload", {
       url: "/file/post",
       paramName: "file", // The name that will be used to transfer the file
       maxFilesize: 2, // MB,
+      acceptedFiles: "application/pdf",
       dictDefaultMessage:
         "<strong>Drag and Drop pdf file</strong> <br> or click to upload",
       autoProcessQueue: false,
@@ -109,6 +116,10 @@
     margin-bottom: 3%;
   }
 
+  .dropzone .dz-message {
+    margin: 4em 0;
+  }
+
   .submit-container {
     margin-top: 20%;
     margin-bottom: 20%;
@@ -117,8 +128,17 @@
   form {
     width: 50%;
   }
-  
+
+  .language-selection {
+    text-align: left;
+    margin: 0;
+  }
+
   @media (min-width: 320px) and (max-width: 480px) {
+    .form {
+      width: 100%;
+    }
+
     .form__field {
       width: 305px;
     }
@@ -130,8 +150,9 @@
     .submit-container {
       width: 100%;
       margin-top: 15%;
-      position: fixed;
       bottom: 0;
+      right: 0;
+      left: 0;
       margin-bottom: 15%;
     }
 
@@ -139,11 +160,62 @@
       width: 100%;
     }
   }
+
+  /* 
+    ##Device = Low Resolution Tablets, Mobiles (Landscape)
+    ##Screen = B/w 481px to 767px
+  */
+  @media (min-width: 481px) and (max-width: 767px) {
+    .form {
+      width: 100%;
+    }
+
+    .form__field {
+      width: 339px;
+    }
+
+    .submit-container {
+      position: inline-block;
+    }
+  }
+
+  @media (min-width: 768px) and (max-width: 1024px) {
+    .form {
+      width: 100%;
+    }
+  }
+
+  @media (min-width: 320px) and (max-width: 480px) {
+    .btn--inside {
+      margin: 0;
+    }
+
+    .submit-container {margin-top: 30%;}
+  }
 </style>
 
 <div class="wrapper">
   <form on:submit={submitForm} class="form">
-    <div id="dropzone-upload" class="dropzone dropzone-style" />
+    <div id="dropzone-upload" class="dropzone dropzone-style">
+      <div class="dz-default dz-message">
+        <span>
+          <strong>Drag and Drop pdf file</strong>
+          <br />
+          or click to upload
+        </span>
+      </div>
+    </div>
+    <div class="language-selection">
+      {#if languages}
+        <select bind:value={selectedLanguage}>
+          {#each languages as language}
+            <option value={language}>
+              {@html language.name}
+            </option>
+          {/each}
+        </select>
+      {/if}
+    </div>
 
     <div class="submit-container">
       <p class="label">Where do we send the processed file?</p>

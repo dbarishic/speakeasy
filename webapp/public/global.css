@@ -60,3 +60,13 @@ button:active {
 button:focus {
 	border-color: #666;
 }
+
+.copyright-info {
+	bottom: 0; 
+	margin: 0 auto; 
+	left: 0; 
+	right: 0; 
+	text-align: center; 
+	position: fixed; 
+	font-size: 0.8rem;
+}

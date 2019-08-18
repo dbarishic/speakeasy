@@ -258,6 +258,11 @@
 
     label {
       padding: 15px;
+      font-size: 0.8rem;
+    }
+
+    main {
+      height: 100vh;
     }
   }
 
