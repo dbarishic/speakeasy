@@ -1,6 +1,8 @@
 <script>
   import Title from "./Title.svelte";
   import TextInput from "./TextInput.svelte";
+  import Icon from "fa-svelte";
+  import { faGithub } from "@fortawesome/fontawesome-free-brands";
 
   export let header;
   export let subheader;
@@ -49,6 +51,11 @@
     margin-left: -96px;
   }
 
+  a {
+    text-decoration: none;
+    color: black;
+  }
+
   /* 
   ##Device = Most of the Smartphones Mobiles (Portrait)
   ##Screen = B/w 320px to 479px
@@ -66,7 +73,13 @@
 <TextInput />
 
 <div class="copyright-info">
-  <p>Copyright © 2019 Davor Barishic-Jaman. All rights reserved.</p>
+  <p>
+    Made by
+    <a href="https://github.com/dbarishic">
+      dbarishic
+      <Icon icon={faGithub} />
+    </a>
+  </p>
 </div>
 
 <link

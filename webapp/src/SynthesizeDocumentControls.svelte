@@ -22,7 +22,7 @@
     languages = await getLanguagesAsync();
 
     myDropzone = new Dropzone("div#dropzone-upload", {
-      url: "/file/post",
+      url: "/",
       addRemoveLinks: true,
       paramName: "file", // The name that will be used to transfer the file
       maxFilesize: 50, // MB,
@@ -40,6 +40,11 @@
         });
       }
     });
+
+    myDropzone.on("sending", (file, xhr, formData) => {
+      formData.append("email", email);
+      formData.append("language", selectedLanguage.code);
+    });
   });
 
   const validateForm = () => {
@@ -52,14 +57,14 @@
     showModal = true;
   };
 
-  const submitForm = () => {
+  const submitForm = async files => {
     console.log("NOT IMPLEMENTED!");
-
-    // TODO
+    myDropzone.processQueue();
   };
 
   const modalConfirmedHandler = () => {
     console.log("Modal accepted!");
+    submitForm();
     showModal = false;
   };
 
