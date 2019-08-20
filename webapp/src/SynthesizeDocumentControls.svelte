@@ -24,6 +24,7 @@
     myDropzone = new Dropzone("div#dropzone-upload", {
       url: "/",
       addRemoveLinks: true,
+      method: "PUT",
       paramName: "file", // The name that will be used to transfer the file
       maxFilesize: 50, // MB,
       acceptedFiles: "application/pdf",
@@ -41,9 +42,9 @@
       }
     });
 
-    myDropzone.on("sending", (file, xhr, formData) => {
-      formData.append("email", email);
-      formData.append("language", selectedLanguage.code);
+    myDropzone.on("processing", () => {
+      myDropzone.options.url =
+        "https://s3-eu-west-1.amazonaws.com/speakeasy-uploads/hadoop101-cert.pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20190820T032428Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=AKIASVZFTAAJDFTWL6HZ%2F20190820%2Feu-west-1%2Fs3%2Faws4_request&X-Amz-Signature=6c75f88cdde3095620ab4bfd12f62727fc21c937bb87823cf2e9208949a54328";
     });
   });
 
@@ -57,19 +58,17 @@
     showModal = true;
   };
 
-  const submitForm = async files => {
+  const submitForm = () => {
     console.log("NOT IMPLEMENTED!");
     myDropzone.processQueue();
   };
 
   const modalConfirmedHandler = () => {
-    console.log("Modal accepted!");
     submitForm();
     showModal = false;
   };
 
   const modalRejectedHandler = () => {
-    console.log("Modal rejected!");
     showModal = false;
   };
 </script>

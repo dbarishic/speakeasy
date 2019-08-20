@@ -63,5 +63,6 @@
     <orderEntry type="library" name="Maven: com.amazonaws:aws-lambda-java-core:1.2.0" level="project" />
     <orderEntry type="library" name="Maven: io.vavr:vavr:0.9.0" level="project" />
     <orderEntry type="library" name="Maven: io.vavr:vavr-match:0.9.0" level="project" />
+    <orderEntry type="library" name="Maven: commons-fileupload:commons-fileupload:1.4" level="project" />
   </component>
 </module>
