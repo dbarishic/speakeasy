@@ -5,6 +5,10 @@
   import "../node_modules/dropzone/dist/min/dropzone.min.css";
 
   import { getLanguagesAsync } from "./Utils.js";
+
+  const BASE_API_URL =
+    "https://9cyxehf46g.execute-api.eu-west-1.amazonaws.com/Prod";
+
   let selectedLanguage;
   let languages;
   let myDropzone;
@@ -43,8 +47,7 @@
     });
 
     myDropzone.on("processing", () => {
-      myDropzone.options.url =
-        "https://s3-eu-west-1.amazonaws.com/speakeasy-uploads/hadoop101-cert.pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20190820T032428Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=AKIASVZFTAAJDFTWL6HZ%2F20190820%2Feu-west-1%2Fs3%2Faws4_request&X-Amz-Signature=6c75f88cdde3095620ab4bfd12f62727fc21c937bb87823cf2e9208949a54328";
+      myDropzone.options.url = "";
     });
   });
 
@@ -58,13 +61,32 @@
     showModal = true;
   };
 
-  const submitForm = () => {
+  const submitForm = async () => {
     console.log("NOT IMPLEMENTED!");
+
+    const requestBody = {
+      email: email,
+      fileName: fileName,
+      language: selectedLanguage.code
+    };
+
+    const response = await fetch(BASE_API_URL + "/upload-file", {
+      method: "post",
+      cache: "force-cache",
+      body: JSON.stringify(requestBody)
+    });
+
+    const data = response.json();
+
+    console.log("MATER");
+    console.log(data.url);
+
+    myDropzone.url = data.url;
     myDropzone.processQueue();
   };
 
-  const modalConfirmedHandler = () => {
-    submitForm();
+  const modalConfirmedHandler = async () => {
+    await submitForm();
     showModal = false;
   };
 

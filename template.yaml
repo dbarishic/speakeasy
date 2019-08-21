@@ -6,15 +6,48 @@ Description: >
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
-    Timeout: 20
+    Timeout: 30
 
   Api:
     Cors:
       AllowMethods: "'*'"
-      AllowHeaders: "'Content-type, Accept'"
+      AllowHeaders: "'*'"
       AllowOrigin: "'*'"
 
+Parameters:
+  S3Mp3Bucket:
+    Default: speakeasy-mp3
+    Description: S3 bucket for storing processed mp3 files
+    Type: String
+  S3FileUploadBucket:
+    Default: speakeasy-files
+    Description: S3 bucket for uploading files
+    Type: String
+  DynamoDbTableName:
+    Default: speakeasy-dynamodb
+    Description: DynamoDB table for storing email-file kv-pairs to be processed
+    Type: String
+
+
 Resources:
+  DynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: "email"
+          AttributeType: "S"
+        - AttributeName: "fileName"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "email"
+          KeyType: "HASH"
+        - AttributeName: "fileName"
+          KeyType: "RANGE"
+      ProvisionedThroughput:
+        ReadCapacityUnits: "5"
+        WriteCapacityUnits: "5"
+      TableName: "speakeasy-dynamodb"
+
   SynthesizeSpeechFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
@@ -24,7 +57,7 @@ Resources:
       MemorySize: 192
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
         Variables:
-          BUCKET_NAME: speakeasy-mp3
+          PARAM1: NAME
       Events:
         Speakeasy:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
@@ -48,7 +81,6 @@ Resources:
             Action: "sts:AssumeRole"
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AWSLambdaExecute
-        - arn:aws:iam::aws:policy/AmazonS3FullAccess
         - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
         - arn:aws:iam::aws:policy/AmazonPollyFullAccess
 
@@ -93,7 +125,8 @@ Resources:
       MemorySize: 192
       Environment:
         Variables:
-          BUCKET_NAME: "speakeasy-uploads"
+          BUCKET_NAME: !Ref S3FileUploadBucket
+          DYNAMODB_TABLE_NAME: !Ref DynamoDbTableName
       Events:
         Speakeasy:
           Type: Api
@@ -102,18 +135,20 @@ Resources:
             Method: post
       Role: !GetAtt [ UploadObjectFunctionRole, Arn ]
 
-    UploadObjectFunctionRole:
-      Type: AWS::IAM::Role
-      Properties:
-        AssumeRolePolicyDocument:
-          Version: "2012-10-17"
-          Statement:
-            - Effect: Allow
-              Principal:
-                Service: lambda.amazonaws.com
-              Action: "sts:AssumeRole"
-        ManagedPolicyArns:
-          - arn:aws:iam::aws:policy/AWSLambdaExecute
+  UploadObjectFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: "sts:AssumeRole"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AWSLambdaExecute
+        - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
+
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
   # Find out more about other implicit resources you can reference within SAM
@@ -133,3 +168,9 @@ Outputs:
   ListAvailableLanguagesFunctionRole:
     Description: "IAM Execution Role created for ListAvailableLanguagesFunction"
     Value: !GetAtt ListAvailableLanguagesFunctionRole.Arn
+  UploadObjectFunction:
+    Description: "UploadObjectFunction Lambda Function ARN"
+    Value: !GetAtt UploadObjectFunction.Arn
+  UploadObjectFunctionRole:
+    Description: "UploadObjectFunctionRole Lambda Function ARN"
+    Value: !GetAtt UploadObjectFunctionRole.Arn
