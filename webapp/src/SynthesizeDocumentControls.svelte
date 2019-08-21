@@ -46,9 +46,9 @@
       }
     });
 
-    myDropzone.on("processing", () => {
-      myDropzone.options.url = "";
-    });
+    // myDropzone.on("processing", () => {
+    //   myDropzone.options.url = "//";
+    // });
   });
 
   const validateForm = () => {
@@ -76,12 +76,9 @@
       body: JSON.stringify(requestBody)
     });
 
-    const data = response.json();
+    const data = await response.json();
 
-    console.log("MATER");
-    console.log(data.url);
-
-    myDropzone.url = data.url;
+    myDropzone.options.url = data.url;
     myDropzone.processQueue();
   };
 

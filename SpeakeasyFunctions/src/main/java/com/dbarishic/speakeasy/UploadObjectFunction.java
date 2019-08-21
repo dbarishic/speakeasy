@@ -4,6 +4,7 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,9 +90,15 @@ public class UploadObjectFunction implements RequestHandler<APIGatewayProxyReque
         headers.put("Access-Control-Allow-Headers", "Content-Type, Accept");
         headers.put("Access-Control-Allow-Methods", "OPTIONS, POST");
 
-        response.setStatusCode(200);
         response.setHeaders(headers);
-        response.setBody(body.toString());
+
+        try {
+            response.setBody(mapper.writeValueAsString(body));
+        } catch (JsonProcessingException e) {
+            log.debug("context", e);
+        }
+
+        response.setStatusCode(200);
 
         return response;
     }
