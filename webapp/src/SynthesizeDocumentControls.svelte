@@ -7,7 +7,7 @@
   import { getLanguagesAsync } from "./Utils.js";
 
   const BASE_API_URL =
-    "https://9cyxehf46g.execute-api.eu-west-1.amazonaws.com/Prod";
+    "https://hdhq8xp1o1.execute-api.eu-west-1.amazonaws.com/Prod";
 
   let selectedLanguage;
   let languages;
@@ -35,6 +35,15 @@
       dictDefaultMessage:
         "<strong>Drag and Drop pdf file</strong> <br> or click to upload",
       autoProcessQueue: false,
+      headers: {
+        "Content-Type": "application/pdf"
+      },
+      renameFile: function(file) {
+        let DELIMITER = "$!$";
+        let newName =
+          email + DELIMITER + file.name + DELIMITER + selectedLanguage.code;
+        return newName;
+      },
       init: function() {
         this.on("addedfile", function(file) {
           fileName = this.files[0].name;
@@ -43,12 +52,11 @@
             this.removeFile(this.files[0]);
           }
         });
+        this.on("complete", function(file) {
+          this.removeFile(file);
+        });
       }
     });
-
-    // myDropzone.on("processing", () => {
-    //   myDropzone.options.url = "//";
-    // });
   });
 
   const validateForm = () => {
@@ -79,6 +87,7 @@
     const data = await response.json();
 
     myDropzone.options.url = data.url;
+    myDropzone.renameFile;
     myDropzone.processQueue();
   };
 

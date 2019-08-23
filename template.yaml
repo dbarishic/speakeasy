@@ -20,11 +20,11 @@ Parameters:
     Description: S3 bucket for storing processed mp3 files
     Type: String
   S3FileUploadBucket:
-    Default: speakeasy-files
+    Default: speakeasy-uploads
     Description: S3 bucket for uploading files
     Type: String
   DynamoDbTableName:
-    Default: speakeasy-dynamodb
+    Default: speakeasy-dynamo
     Description: DynamoDB table for storing email-file kv-pairs to be processed
     Type: String
 
@@ -34,19 +34,15 @@ Resources:
     Type: AWS::DynamoDB::Table
     Properties:
       AttributeDefinitions:
-        - AttributeName: "email"
-          AttributeType: "S"
-        - AttributeName: "fileName"
+        - AttributeName: "fileHash"
           AttributeType: "S"
       KeySchema:
-        - AttributeName: "email"
+        - AttributeName: "fileHash"
           KeyType: "HASH"
-        - AttributeName: "fileName"
-          KeyType: "RANGE"
       ProvisionedThroughput:
         ReadCapacityUnits: "5"
         WriteCapacityUnits: "5"
-      TableName: "speakeasy-dynamodb"
+      TableName: !Ref DynamoDbTableName
 
   SynthesizeSpeechFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
@@ -148,6 +144,7 @@ Resources:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AWSLambdaExecute
         - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
+        - arn:aws:iam::aws:policy/AmazonS3FullAccess
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function

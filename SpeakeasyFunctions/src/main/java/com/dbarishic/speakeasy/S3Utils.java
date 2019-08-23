@@ -15,8 +15,7 @@ import software.amazon.awssdk.utils.builder.ToCopyableBuilder;
 import java.io.UncheckedIOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.util.Arrays;
-import java.util.stream.Collectors;
+import java.nio.charset.StandardCharsets;
 import java.net.URLEncoder;
 import java.time.Duration;
 import java.time.Instant;
@@ -27,16 +26,9 @@ public class S3Utils {
     public static URI presign(PresignUrlRequest request) {
         String encodedBucket, encodedKey;
         try {
-            encodedBucket = URLEncoder.encode(request.bucket(), "UTF-8");
-            encodedKey = Arrays.stream(request.key().split("/"))
-                    .map(s -> {
-                        try {
-                            return URLEncoder.encode(s, "UTF-8");
-                        } catch (UnsupportedEncodingException e) {
-                            throw new UncheckedIOException(e);
-                        }
-                    })
-                    .collect(Collectors.joining("/"));
+            encodedBucket = URLEncoder.encode(request.bucket(), StandardCharsets.UTF_8.name());
+            encodedKey = request.key();
+            //encodedKey = URLEncoder.encode(request.key(), StandardCharsets.UTF_8.name());
         } catch (UnsupportedEncodingException e) {
             throw new UncheckedIOException(e);
         }

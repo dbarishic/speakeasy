@@ -6,6 +6,7 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
@@ -47,8 +48,14 @@ public class UploadObjectFunction implements RequestHandler<APIGatewayProxyReque
             log.debug("context", e);
         }
 
+        // generate fileHash
+        String fileHashDelimiter = "$!$";
+        String S3Key = request.getEmail() + fileHashDelimiter + request.getFileName() + fileHashDelimiter + request.getLanguage();
+        String fileHash = DigestUtils.md5Hex(S3Key);
+
         // insert data into dynamodb
         Map<String, AttributeValue> itemValues = new HashMap<>();
+        itemValues.put("fileHash", AttributeValue.builder().s(fileHash).build());
         itemValues.put("email", AttributeValue.builder().s(request.getEmail()).build());
         itemValues.put("language", AttributeValue.builder().s(request.getLanguage()).build());
         itemValues.put("fileName", AttributeValue.builder().s(request.getFileName()).build());
@@ -74,10 +81,10 @@ public class UploadObjectFunction implements RequestHandler<APIGatewayProxyReque
         // generate presigned upload url
         URI url = S3Utils.presign(S3Utils.PresignUrlRequest.builder()
                 .bucket(System.getenv("BUCKET_NAME"))
-                .key(request.getFileName())
+                .key(S3Key)
                 .region(Region.EU_WEST_1)
                 .httpMethod(SdkHttpMethod.PUT)
-                .signatureDuration(Duration.ofHours(1))
+                .signatureDuration(Duration.ofMinutes(15))
                 .build());
 
         Map<String, URI> body = new HashMap<>();
@@ -87,8 +94,8 @@ public class UploadObjectFunction implements RequestHandler<APIGatewayProxyReque
 
         final Map<String, String> headers = new HashMap<>();
         headers.put("Access-Control-Allow-Origin", "*");
-        headers.put("Access-Control-Allow-Headers", "Content-Type, Accept");
-        headers.put("Access-Control-Allow-Methods", "OPTIONS, POST");
+        headers.put("Access-Control-Allow-Headers", "*");
+        headers.put("Access-Control-Allow-Methods", "OPTIONS, POST, PUT");
 
         response.setHeaders(headers);
 

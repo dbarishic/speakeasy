@@ -5,7 +5,7 @@
   import { getLanguagesAsync } from "./Utils.js";
 
   const BASE_API_URL =
-    "https://9cyxehf46g.execute-api.eu-west-1.amazonaws.com/Prod";
+    "https://hdhq8xp1o1.execute-api.eu-west-1.amazonaws.com/Prod";
 
   export let textToTranslate = "";
 

@@ -15,7 +15,7 @@
     left: 0;
     right: 0;
     text-align: center;
-    position: absolute;
+    position: fixed;
     font-size: 0.8rem;
     margin-top: 15%;
   }
