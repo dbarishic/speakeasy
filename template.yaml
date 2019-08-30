@@ -15,14 +15,18 @@ Globals:
       AllowOrigin: "'*'"
 
 Parameters:
+  S3DeploymentsBucket:
+    Description: The S3 bucket which contains the Lambda deployment package
+    Type: String
+    Default: speakeasy-deployments
   S3Mp3Bucket:
     Default: speakeasy-mp3
     Description: S3 bucket for storing processed mp3 files
     Type: String
-  S3FileUploadBucket:
-    Default: speakeasy-uploads
-    Description: S3 bucket for uploading files
+  S3FileUploadBucketName:
+    Description: Upload bucket
     Type: String
+    Default: speakeasy-uploads
   DynamoDbTableName:
     Default: speakeasy-dynamo
     Description: DynamoDB table for storing email-file kv-pairs to be processed
@@ -30,6 +34,10 @@ Parameters:
 
 
 Resources:
+  S3FileUploadBucket:
+    Type: AWS::S3::Bucket
+    Name: !Ref S3FileUploadBucketName
+
   DynamoDBTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -44,12 +52,24 @@ Resources:
         WriteCapacityUnits: "5"
       TableName: !Ref DynamoDbTableName
 
+  DependencyLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: speakeasy-dependencies
+      CompatibleRuntimes:
+        - java8
+      ContentUri: ./dependency-layer.zip
+      Description: Lambda layer containing all dependencies
+      LicenseInfo: MIT
+
   SynthesizeSpeechFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       CodeUri: SpeakeasyFunctions
       Handler: com.dbarishic.speakeasy.SynthesizeSpeechFunction::handleRequest
       Runtime: java8
+      Layers:
+        - !Ref DependencyLayer
       MemorySize: 192
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
         Variables:
@@ -86,6 +106,8 @@ Resources:
       CodeUri: SpeakeasyFunctions
       Handler: com.dbarishic.speakeasy.ListAvailableLanguagesFunction::handleRequest
       Runtime: java8
+      Layers:
+        - !Ref DependencyLayer
       MemorySize: 192
       Environment:
         Variables:
@@ -118,10 +140,12 @@ Resources:
       CodeUri: SpeakeasyFunctions
       Handler: com.dbarishic.speakeasy.UploadObjectFunction::handleRequest
       Runtime: java8
+      Layers:
+        - !Ref DependencyLayer
       MemorySize: 192
       Environment:
         Variables:
-          BUCKET_NAME: !Ref S3FileUploadBucket
+          BUCKET_NAME: !Ref S3FileUploadBucketName
           DYNAMODB_TABLE_NAME: !Ref DynamoDbTableName
       Events:
         Speakeasy:
@@ -145,6 +169,52 @@ Resources:
         - arn:aws:iam::aws:policy/AWSLambdaExecute
         - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
         - arn:aws:iam::aws:policy/AmazonS3FullAccess
+
+  SynthesizeDocumentFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: SpeakeasyFunctions
+      Handler: com.dbarishic.speakeasy.SynthesizeDocumentFunction::handleRequest
+      Runtime: java8
+      Layers:
+        - !Ref DependencyLayer
+      MemorySize: 192
+      Environment:
+        Variables:
+          MP3_BUCKET_NAME: !Ref S3Mp3Bucket
+          DYNAMODB_TABLE_NAME: !Ref DynamoDbTableName
+      Events:
+        UploadDocumentEvent:
+          Type: S3
+          Properties:
+            Bucket: !Ref S3FileUploadBucket
+            Events: s3:ObjectCreated:*
+      Role: !GetAtt [ SynthesizeDocumentFunctionRole, Arn ]
+
+  SynthesizeDocumentFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: "sts:AssumeRole"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AWSLambdaExecute
+        - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
+        - arn:aws:iam::aws:policy/AmazonS3FullAccess
+        - arn:aws:iam::aws:policy/AmazonPollyFullAccess
+
+#  LambdaInvokePermission:
+#    Type: 'AWS::Lambda::Permission'
+#    Properties:
+#      FunctionName: !GetAtt SynthesizeDocumentFunction.Arn
+#      Action: 'lambda:InvokeFunction'
+#      Principal: 's3.amazonaws.com'
+#      SourceAccount: !Sub ${AWS::AccountId}
+#      SourceArn: !GetAtt S3FileUploadBucket.Arn
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
@@ -171,3 +241,9 @@ Outputs:
   UploadObjectFunctionRole:
     Description: "UploadObjectFunctionRole Lambda Function ARN"
     Value: !GetAtt UploadObjectFunctionRole.Arn
+  SynthesizeDocumentFunction:
+    Description: "SynthesizeDocumentFunction Lambda Function ARN"
+    Value: !GetAtt SynthesizeDocumentFunction.Arn
+  SynthesizeDocumentFunctionRole:
+    Description: "SynthesizeDocumentFunctionRole Lambda Function ARN"
+    Value: !GetAtt SynthesizeDocumentFunctionRole.Arn

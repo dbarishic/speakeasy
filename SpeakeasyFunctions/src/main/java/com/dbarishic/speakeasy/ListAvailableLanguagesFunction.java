@@ -4,11 +4,11 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.squareup.moshi.JsonAdapter;
+import com.squareup.moshi.Moshi;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
 import software.amazon.awssdk.http.apache.ApacheHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.polly.PollyClient;
@@ -16,11 +16,13 @@ import software.amazon.awssdk.services.polly.model.DescribeVoicesRequest;
 import software.amazon.awssdk.services.polly.model.DescribeVoicesResponse;
 import software.amazon.awssdk.services.polly.model.Voice;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
 
+/**
+ * Lists all available languages provided by AWS Polly
+ */
 public class ListAvailableLanguagesFunction implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
 
@@ -28,35 +30,22 @@ public class ListAvailableLanguagesFunction implements RequestHandler<APIGateway
 
     private static final PollyClient client = PollyClient.builder()
             .region(Region.EU_WEST_1)
-            .credentialsProvider(DefaultCredentialsProvider.create())
+            .credentialsProvider(EnvironmentVariableCredentialsProvider.create())
             .httpClient(ApacheHttpClient.builder().build())
             .build();
 
-    private static final ObjectMapper mapper = new ObjectMapper();
+
+    private static final Moshi moshi = new Moshi.Builder().build();
+    private static final JsonAdapter<Map> jsonAdapter = moshi.adapter(Map.class);
 
     @Override
     public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent requestEvent, Context context) {
-
-        try {
-            Request request = new Request();
-            request = mapper.readValue(requestEvent.getBody(), Request.class);
-        } catch (IOException e) {
-            log.debug("context", e);
-        } catch (NullPointerException e) {
-            log.info("CLOUDWATCH WARM-UP INVOCATION");
-            return new APIGatewayProxyResponseEvent();
-        }
 
         final List<Language> languages = getLanguages();
         final Map<String, List<Language>> data = new HashMap<>();
         data.put("languages", languages);
 
-        String dataJson = null;
-        try {
-            dataJson = mapper.writeValueAsString(data);
-        } catch (JsonProcessingException e) {
-            log.debug("context", e);
-        }
+        String dataJson = jsonAdapter.toJson(data);
 
         final Map<String, String> headers = new HashMap<>();
         headers.put("Access-Control-Allow-Origin", "*");

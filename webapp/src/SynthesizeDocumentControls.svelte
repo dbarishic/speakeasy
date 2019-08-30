@@ -7,7 +7,7 @@
   import { getLanguagesAsync } from "./Utils.js";
 
   const BASE_API_URL =
-    "https://hdhq8xp1o1.execute-api.eu-west-1.amazonaws.com/Prod";
+    "https://n7nad4lahf.execute-api.eu-west-1.amazonaws.com/Prod";
 
   let selectedLanguage;
   let languages;
@@ -15,10 +15,10 @@
 
   let showModal = false;
 
-  // TODO: REMOVE TEMP TESTING VARS
   let email = "";
   let fileName = "";
   let formInvalid = false;
+  let prog = 0;
 
   Dropzone.autoDiscover = false;
 
@@ -38,12 +38,6 @@
       headers: {
         "Content-Type": "application/pdf"
       },
-      renameFile: function(file) {
-        let DELIMITER = "$!$";
-        let newName =
-          email + DELIMITER + file.name + DELIMITER + selectedLanguage.code;
-        return newName;
-      },
       init: function() {
         this.on("addedfile", function(file) {
           fileName = this.files[0].name;
@@ -54,6 +48,11 @@
         });
         this.on("complete", function(file) {
           this.removeFile(file);
+          prog = 0;
+          showModal = false;
+        });
+        this.on("totaluploadprogress", function(progress) {
+          prog = Math.trunc(progress);
         });
       }
     });
@@ -87,17 +86,18 @@
     const data = await response.json();
 
     myDropzone.options.url = data.url;
-    myDropzone.renameFile;
     myDropzone.processQueue();
   };
 
   const modalConfirmedHandler = async () => {
     await submitForm();
-    showModal = false;
+    prog = 0;
   };
 
   const modalRejectedHandler = () => {
+    myDropzone.removeFile(myDropzone.files[0]);
     showModal = false;
+    prog = 0;
   };
 </script>
 
@@ -291,13 +291,15 @@
           Please add a pdf file.
         </p>
       {/if}
-
     </div>
   </form>
 </div>
 
 {#if showModal}
-  <Modal on:confirm={modalConfirmedHandler} on:reject={modalRejectedHandler}>
+  <Modal
+    on:confirm={modalConfirmedHandler}
+    on:reject={modalRejectedHandler}
+    progress={prog}>
     <h2 slot="header">Are you sure?</h2>
     <span>
       Are you sure you want to synthesize

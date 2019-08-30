@@ -2,6 +2,7 @@
   import { createEventDispatcher } from "svelte";
 
   const dispatch = createEventDispatcher();
+  export let progress;
 </script>
 
 <style>
@@ -53,8 +54,54 @@
     margin-top: 2rem;
   }
 
+  .progress-container {
+    align-content: center;
+  }
+
   .confirm-button:active {
     transform: scale(0.98);
+  }
+
+  .progress {
+    height: 1.5em;
+    width: 100%;
+    background-color: #c9c9c9;
+    position: relative;
+  }
+  .progress:before {
+    content: attr(data-label);
+    font-size: 0.8em;
+    position: absolute;
+    text-align: center;
+    top: 5px;
+    left: 0;
+    right: 0;
+  }
+  .progress .value {
+    background-color: white;
+    display: inline-block;
+    height: 100%;
+  }
+
+  @keyframes lds-rolling {
+    0% {
+      -webkit-transform: translate(-50%, -50%) rotate(0deg);
+      transform: translate(-50%, -50%) rotate(0deg);
+    }
+    100% {
+      -webkit-transform: translate(-50%, -50%) rotate(360deg);
+      transform: translate(-50%, -50%) rotate(360deg);
+    }
+  }
+  @-webkit-keyframes lds-rolling {
+    0% {
+      -webkit-transform: translate(-50%, -50%) rotate(0deg);
+      transform: translate(-50%, -50%) rotate(0deg);
+    }
+    100% {
+      -webkit-transform: translate(-50%, -50%) rotate(360deg);
+      transform: translate(-50%, -50%) rotate(360deg);
+    }
   }
 
   /* Chrome only */
@@ -69,20 +116,36 @@
 <div class="modal-background" on:click={() => dispatch('reject')} />
 
 <div class="modal">
-  <slot name="header" />
-  <slot />
+  {#if progress == 0}
+    <slot name="header" />
+    <slot />
+    <div class="buttons-container">
+      <button
+        class="reject-button uppercase"
+        on:click={() => dispatch('reject')}>
+        Changed my mind
+      </button>
 
-  <div class="buttons-container">
-    <button class="reject-button uppercase" on:click={() => dispatch('reject')}>
-      Changed my mind
-    </button>
+      <button
+        autofocus
+        class="confirm-button btn btn--primary uppercase"
+        on:click={() => dispatch('confirm')}>
+        Confirm
+      </button>
+    </div>
+  {:else}
+    <slot name="header" />
+    <slot />
+    <div class="buttons-container">
+      <button
+        class="reject-button uppercase"
+        on:click={() => dispatch('reject')}>
+        Changed my mind
+      </button>
 
-    <button
-      autofocus
-      class="confirm-button btn btn--primary uppercase"
-      on:click={() => dispatch('confirm')}>
-      Confirm
-    </button>
-  </div>
-
+      <button disabled class="confirm-button btn btn--primary uppercase">
+        <span>{progress}%</span>
+      </button>
+    </div>
+  {/if}
 </div>

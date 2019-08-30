@@ -1,5 +1,5 @@
 const BASE_API_URL =
-    "https://hdhq8xp1o1.execute-api.eu-west-1.amazonaws.com/Prod/";
+    "https://n7nad4lahf.execute-api.eu-west-1.amazonaws.com/Prod";
 
 const getLanguagesAsync = async () => {
     const cachedLanguages = sessionStorage.getItem("languages");

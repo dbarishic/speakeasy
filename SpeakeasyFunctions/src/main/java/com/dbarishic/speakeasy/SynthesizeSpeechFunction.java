@@ -4,11 +4,12 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.squareup.moshi.JsonAdapter;
+import com.squareup.moshi.Moshi;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
 import software.amazon.awssdk.http.apache.ApacheHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.polly.PollyClient;
@@ -20,35 +21,32 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 /**
- * Handler for requests to Lambda function.
+ * Gets message as JSON (max 3000 characters) then synthesizes audio in the given language
+ * returns a base64 string of the synthesized audio file
  */
 public class SynthesizeSpeechFunction implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
     private static Logger log = LoggerFactory.getLogger(SynthesizeSpeechFunction.class);
 
     private static final PollyClient myPollyClient = PollyClient.builder()
-            .credentialsProvider(DefaultCredentialsProvider.create())
             .region(Region.EU_WEST_1)
+            .credentialsProvider(EnvironmentVariableCredentialsProvider.create())
             .httpClient(ApacheHttpClient.builder().build())
             .build();
 
-    private static final ObjectMapper mapper = new ObjectMapper();
-
+    private static final Moshi moshi = new Moshi.Builder().build();
+    private static final JsonAdapter<Request> jsonAdapter = moshi.adapter(Request.class);
 
     // Synthesize speech and return it as a base64 encoded string
     @Override
     public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent requestEvent, Context context) {
 
         // deconstruct request
-        Request request = new Request();
-
+        Request request = null;
         try {
-            request = mapper.readValue(requestEvent.getBody(), Request.class);
+            request = jsonAdapter.fromJson(requestEvent.getBody());
         } catch (IOException e) {
-            log.debug("context", e);
-        } catch (NullPointerException e) {
-            log.info("CLOUDWATCH WARM-UP INVOCATION");
-            return new APIGatewayProxyResponseEvent();
+            e.printStackTrace();
         }
 
         DescribeVoicesRequest describeVoicesRequest = DescribeVoicesRequest.builder()

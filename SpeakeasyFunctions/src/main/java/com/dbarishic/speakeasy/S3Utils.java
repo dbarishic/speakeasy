@@ -21,6 +21,10 @@ import java.time.Duration;
 import java.time.Instant;
 
 
+/**
+ * Utils to generate a presigned upload url for S3 because it is not yet supported by the
+ * aws-sdk-java-v2, will probably be removed when the sdk starts supporting presigned urls
+ */
 public class S3Utils {
 
     public static URI presign(PresignUrlRequest request) {

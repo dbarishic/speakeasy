@@ -5,7 +5,7 @@
   import { getLanguagesAsync } from "./Utils.js";
 
   const BASE_API_URL =
-    "https://hdhq8xp1o1.execute-api.eu-west-1.amazonaws.com/Prod";
+    "https://n7nad4lahf.execute-api.eu-west-1.amazonaws.com/Prod";
 
   export let textToTranslate = "";
 
@@ -52,6 +52,7 @@
       requestBody.language,
       requestBody.text
     );
+
     if (isCached) {
       return;
     }
@@ -61,11 +62,7 @@
     const response = await fetch(BASE_API_URL + "/synthesize-voice", {
       method: "post",
       cache: "force-cache",
-      body: JSON.stringify(requestBody),
-      headers: {
-        Accept: "audio/mpeg",
-        "Content-Type": "application/json"
-      }
+      body: JSON.stringify(requestBody)
     });
 
     const audioAsBase64 = await response.text();

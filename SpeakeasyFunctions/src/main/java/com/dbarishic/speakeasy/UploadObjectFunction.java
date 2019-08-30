@@ -4,14 +4,14 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.squareup.moshi.JsonAdapter;
+import com.squareup.moshi.Moshi;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
 import software.amazon.awssdk.http.SdkHttpMethod;
-import software.amazon.awssdk.http.apache.ApacheHttpClient;
+import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
@@ -25,25 +25,33 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
+
+/**
+ * Generates a presigned S3 upload url with given email, fileName and languageCode
+ * languageCode is needed later for voice synthesis of the uploaded file
+ */
 public class UploadObjectFunction implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
     private static final DynamoDbClient myDynamoDbClient = DynamoDbClient.builder()
             .region(Region.EU_WEST_1)
-            .credentialsProvider(DefaultCredentialsProvider.create())
-            .httpClient(ApacheHttpClient.builder().build())
+            .credentialsProvider(EnvironmentVariableCredentialsProvider.create())
+            .httpClient(UrlConnectionHttpClient.builder().build())
             .build();
 
-    private static Logger log = LoggerFactory.getLogger(SynthesizeSpeechFunction.class);
-    private static final ObjectMapper mapper = new ObjectMapper();
+    private static final Logger log = LoggerFactory.getLogger(SynthesizeSpeechFunction.class);
+
+    private static final Moshi moshi = new Moshi.Builder().build();
+    private static final JsonAdapter<UploadFileRequest> requestJsonAdapter = moshi.adapter(UploadFileRequest.class);
+    private static final JsonAdapter<Map> responseJsonAdapter = moshi.adapter(Map.class);
+
 
     @Override
     public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent requestEvent, Context context) {
 
         // deconstruct request
-        UploadFileRequest request = new UploadFileRequest();
-
+        UploadFileRequest request = null;
         try {
-            request = mapper.readValue(requestEvent.getBody(), UploadFileRequest.class);
+            request = requestJsonAdapter.fromJson(requestEvent.getBody());
         } catch (IOException e) {
             log.debug("context", e);
         }
@@ -87,8 +95,8 @@ public class UploadObjectFunction implements RequestHandler<APIGatewayProxyReque
                 .signatureDuration(Duration.ofMinutes(15))
                 .build());
 
-        Map<String, URI> body = new HashMap<>();
-        body.put("url", url);
+        Map<String, String> body = new HashMap<>();
+        body.put("url", url.toASCIIString());
 
         APIGatewayProxyResponseEvent response = new APIGatewayProxyResponseEvent();
 
@@ -98,13 +106,7 @@ public class UploadObjectFunction implements RequestHandler<APIGatewayProxyReque
         headers.put("Access-Control-Allow-Methods", "OPTIONS, POST, PUT");
 
         response.setHeaders(headers);
-
-        try {
-            response.setBody(mapper.writeValueAsString(body));
-        } catch (JsonProcessingException e) {
-            log.debug("context", e);
-        }
-
+        response.setBody(responseJsonAdapter.toJson(body));
         response.setStatusCode(200);
 
         return response;

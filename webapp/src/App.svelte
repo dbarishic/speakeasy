@@ -39,6 +39,7 @@
     padding: 12px 36px;
     font-family: "Overpass", sans-serif;
     font-weight: 900;
+    min-width: 130px;
   }
   :global(.btn--primary:hover) {
     background: #333;
