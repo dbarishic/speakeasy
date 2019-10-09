@@ -14,13 +14,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
 import software.amazon.awssdk.core.sync.ResponseTransformer;
-import software.amazon.awssdk.http.nio.netty.NettyNioAsyncHttpClient;
+import software.amazon.awssdk.http.apache.ApacheHttpClient;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.*;
 import software.amazon.awssdk.services.lambda.model.ResourceNotFoundException;
-import software.amazon.awssdk.services.polly.PollyAsyncClient;
+import software.amazon.awssdk.services.polly.PollyClient;
 import software.amazon.awssdk.services.polly.model.*;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
@@ -32,7 +32,6 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Triggered on a s3:createObject event, get the uploaded file from s3, extracts text,
@@ -49,10 +48,10 @@ public class SynthesizeDocumentFunction implements RequestHandler<S3Event, Optio
             .region(Region.EU_WEST_1)
             .build();
 
-    private static final PollyAsyncClient pollyAsyncClient = PollyAsyncClient.builder()
-            .httpClient(NettyNioAsyncHttpClient.builder().build())
-            .credentialsProvider(EnvironmentVariableCredentialsProvider.create())
+    private static final PollyClient myPollyClient = PollyClient.builder()
             .region(Region.EU_WEST_1)
+            .credentialsProvider(EnvironmentVariableCredentialsProvider.create())
+            .httpClient(ApacheHttpClient.builder().build())
             .build();
 
     private static final DynamoDbClient myDynamoDbClient = DynamoDbClient.builder()
@@ -113,17 +112,13 @@ public class SynthesizeDocumentFunction implements RequestHandler<S3Event, Optio
         String fileName = parts[1];
         String languageCode = parts[2];
 
+        log.info("CALLING DESCRIBE VOICES WITH LANG_CODE: " + languageCode);
         // text to mp3 async
         DescribeVoicesRequest describeVoicesRequest = DescribeVoicesRequest.builder()
                 .languageCode(languageCode)
                 .build();
 
-        VoiceId voiceId = null;
-        try {
-            voiceId = pollyAsyncClient.describeVoices(describeVoicesRequest).get().voices().get(0).id();
-        } catch (InterruptedException | ExecutionException e) {
-            log.debug("context", e);
-        }
+        VoiceId voiceId = myPollyClient.describeVoices(describeVoicesRequest).voices().get(0).id();
 
         StartSpeechSynthesisTaskRequest request = StartSpeechSynthesisTaskRequest.builder()
                 .text(parsedText)
@@ -134,12 +129,7 @@ public class SynthesizeDocumentFunction implements RequestHandler<S3Event, Optio
                 .voiceId(voiceId)
                 .build();
 
-        StartSpeechSynthesisTaskResponse response = null;
-        try {
-            response = pollyAsyncClient.startSpeechSynthesisTask(request).get();
-        } catch (InterruptedException | ExecutionException e) {
-            log.debug("context", e);
-        }
+        StartSpeechSynthesisTaskResponse response = myPollyClient.startSpeechSynthesisTask(request);
 
         // update dynamodb record
         Optional<SynthesisTask> synthesisTask = Optional.ofNullable(response.synthesisTask());
@@ -149,7 +139,7 @@ public class SynthesizeDocumentFunction implements RequestHandler<S3Event, Optio
             generatedMp3UriOpt = Optional.ofNullable(response.synthesisTask().outputUri());
         }
 
-        HashMap<String,AttributeValueUpdate> updatedValues = new HashMap<>();
+        HashMap<String, AttributeValueUpdate> updatedValues = new HashMap<>();
 
         final String PROCESSED = "1";
 
@@ -163,8 +153,7 @@ public class SynthesizeDocumentFunction implements RequestHandler<S3Event, Optio
                 .action(AttributeAction.PUT)
                 .build());
 
-
-        HashMap<String,AttributeValue> itemKey = new HashMap<>();
+        HashMap<String, AttributeValue> itemKey = new HashMap<>();
 
         itemKey.put("fileHash", AttributeValue.builder().s(fileHash).build());
         UpdateItemRequest updateItemRequest = UpdateItemRequest.builder()

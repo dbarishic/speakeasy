@@ -7,7 +7,7 @@
   import { getLanguagesAsync } from "./Utils.js";
 
   const BASE_API_URL =
-    "https://n7nad4lahf.execute-api.eu-west-1.amazonaws.com/Prod";
+    "https://u7t88w3dal.execute-api.eu-west-1.amazonaws.com/Prod";
 
   let selectedLanguage;
   let languages;
