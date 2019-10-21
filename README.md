@@ -5,7 +5,8 @@ If you have everything set up properly you can just run one of the deployment sc
 
 ## Project structure
 ```bash
-├── README.md                                   <-- This instructions file
+├── README.md                                  <-- This instructions file
+├── speakeasy-espeak                           <-- spring project with espeak as a speech synthesis backend(instead of polly)
 ├── SpeakeasyFunction                          <-- Source for SpeakeasyFunction Lambda Function
 │   ├── pom.xml                                 <-- Java dependencies
 │   └── src
@@ -19,6 +20,7 @@ If you have everything set up properly you can just run one of the deployment sc
 │               └── com.dbarishic.speakeasy
 │                   └── AppTest.java
 └── template.yaml
+
 ```
 
 ## Requirements
