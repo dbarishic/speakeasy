@@ -2,6 +2,7 @@ package com.dbarihic.speakeasyespeak.helper;
 
 import com.dbarihic.speakeasyespeak.domain.Voice;
 
+import java.io.File;
 import java.io.IOException;
 
 /**
@@ -38,12 +39,13 @@ public class EspeakHelper {
 
     /**
      * Create a new espeak process, save output to wave file
-     *
-     * @param text     - the text to speak
+     *  @param text     - the text to speak
      * @param fileName - name of output file
+     * @return
      */
-    public void speak(String text, String fileName) {
-        execute(COMMAND_ESPEAK,
+    public File speakToFile(String text, String fileName) throws IOException, InterruptedException {
+
+        ProcessBuilder processBuilder = new ProcessBuilder(COMMAND_ESPEAK,
                 "-v", voice.getName() + voice.getVariant(),
                 "-p", Integer.toString(voice.getPitch()),
                 "-a", Integer.toString(voice.getAmplitude()),
@@ -51,6 +53,11 @@ public class EspeakHelper {
                 "-g", Integer.toString(voice.getGap()),
                 "-w", fileName + ".wav",
                 text);
+
+        Process p = processBuilder.start();
+        p.waitFor();
+
+        return new File(fileName + ".wav");
     }
 
     private static void execute(final String... command) {
@@ -66,5 +73,9 @@ public class EspeakHelper {
                 e.printStackTrace();
             }
         }, threadName).start();
+    }
+
+    public void setVoice(Voice voice) {
+        this.voice = voice;
     }
 }
