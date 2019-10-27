@@ -2,8 +2,12 @@ package com.dbarihic.speakeasyespeak.helper;
 
 import com.dbarihic.speakeasyespeak.domain.Voice;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Reference: http://espeak.sourceforge.net/commands.html
@@ -58,6 +62,34 @@ public class EspeakHelper {
         p.waitFor();
 
         return new File(fileName + ".wav");
+    }
+
+    public String[] listVoices() throws InterruptedException, IOException {
+        String[] cmd = {
+                "/bin/sh",
+                "-c",
+                "espeak --voices | awk '{print $2}'"
+        };
+        ProcessBuilder processBuilder = new ProcessBuilder(cmd);
+
+        Process p = processBuilder.start();
+
+        BufferedReader reader = new BufferedReader(new InputStreamReader((p.getInputStream())));
+        StringBuilder stringBuilder = new StringBuilder();
+        String line = null;
+
+        while ( (line = reader.readLine()) != null) {
+            stringBuilder.append(line);
+            stringBuilder.append(System.getProperty("line.separator"));
+        }
+
+        String espeakResult = stringBuilder.toString();
+        String[] tokenized = espeakResult.split("\n");
+        String[] result = Arrays.copyOfRange(tokenized, 1, tokenized.length);
+
+        p.waitFor();
+
+        return result;
     }
 
     private static void execute(final String... command) {

@@ -1,28 +1,43 @@
 const BASE_API_URL =
     "https://u7t88w3dal.execute-api.eu-west-1.amazonaws.com/Prod";
 
-const getLanguagesAsync = async () => {
-    const cachedLanguages = sessionStorage.getItem("languages");
-    if (cachedLanguages !== null) {
-        return JSON.parse(cachedLanguages);
-    }
+const getLanguagesAsync = async (backend) => {
 
-    const requestBody = {
-        origin: "speakeasy.FE"
-    };
-
-    const response = await fetch(BASE_API_URL + "/get-languages", {
-        method: "post",
-        cache: "force-cache",
-        body: JSON.stringify(requestBody),
-        headers: {
-            Accept: "audio/mpeg"
+    if (backend === "polly") {
+        const cachedLanguages = sessionStorage.getItem("languages-polly");
+        if (cachedLanguages !== null) {
+            return JSON.parse(cachedLanguages);
         }
-    });
-    const data = await response.json();
-    sessionStorage.setItem("languages", JSON.stringify(data.languages));
-    return data.languages;
+    
+        const requestBody = {
+            origin: "speakeasy.FE"
+        };
+    
+        const response = await fetch(BASE_API_URL + "/get-languages", {
+            method: "post",
+            cache: "force-cache",
+            body: JSON.stringify(requestBody),
+            headers: {
+                Accept: "audio/mpeg"
+            }
+        });
+        const data = await response.json();
+        sessionStorage.setItem("languages-polly", JSON.stringify(data.languages));
+        return data.languages;
+    } else if (backend === "espeak") {
+        const cachedLanguages = sessionStorage.getItem("languages-espeak");
+        if (cachedLanguages !== null) {
+            return JSON.parse(cachedLanguages);
+        }
+    
+        const response = await fetch("http://localhost:5000/speech/list-voices", {
+            method: "get"
+        });
 
+        const data = await response.json();
+        sessionStorage.setItem("languages-espeak", JSON.stringify(data.languages));
+        return data.languages;
+    }
 };
 
 export { getLanguagesAsync };

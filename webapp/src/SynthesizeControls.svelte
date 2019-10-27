@@ -9,12 +9,15 @@
 
   export let textToTranslate = "";
 
+  let selectedBackend = "espeak";
+  let backends = ["espeak", "polly"];
+
   let languages;
   let selectedLanguage;
   let loading = false;
 
   document.addEventListener("DOMContentLoaded", async () => {
-    languages = await getLanguagesAsync();
+    languages = await getLanguagesAsync(selectedBackend);
   });
 
   const checkAndPlayFromCache = (language, text) => {
@@ -38,6 +41,11 @@
     return false;
   };
 
+  const loadLanguages = async () => {
+    languages = await getLanguagesAsync(selectedBackend);
+    selectedLanguage = languages[0];
+  };
+
   const synthesize = async () => {
     if (textToTranslate.trim.length > 3000) {
       return;
@@ -59,13 +67,28 @@
 
     loading = true;
 
-    const response = await fetch(BASE_API_URL + "/synthesize-voice", {
-      method: "post",
-      cache: "force-cache",
-      body: JSON.stringify(requestBody)
-    });
+    let audioAsBase64 = null;
+    if (selectedBackend === "espeak") {
+      const response = await fetch("http://localhost:5000/speech/synthesize", {
+        method: "post",
+        cache: "force-cache",
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestBody)
+      });
 
-    const audioAsBase64 = await response.text();
+      audioAsBase64 = await response.text();
+    } else if (selectedBackend === "polly") {
+      const response = await fetch(BASE_API_URL + "/synthesize-voice", {
+        method: "post",
+        cache: "force-cache",
+        body: JSON.stringify(requestBody)
+      });
+
+      audioAsBase64 = await response.text();
+    }
 
     sessionStorage.setItem("lang-code", requestBody.language);
     sessionStorage.setItem("translation-text", requestBody.text);
@@ -84,6 +107,7 @@
     float: left;
     justify-content: left;
     margin-top: 2%;
+    margin-right: 8px;
   }
 
   .synthesize-button {
@@ -150,6 +174,15 @@
 </style>
 
 {#if languages}
+  <div class="synthesize-controls">
+    <select bind:value={selectedBackend} on:change={loadLanguages}>
+      {#each backends as backend}
+        <option value={backend}>
+          {@html backend}
+        </option>
+      {/each}
+    </select>
+  </div>
   <div class="synthesize-controls">
     <select bind:value={selectedLanguage}>
       {#each languages as language}

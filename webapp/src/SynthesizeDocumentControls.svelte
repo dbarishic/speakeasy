@@ -9,6 +9,7 @@
   const BASE_API_URL =
     "https://u7t88w3dal.execute-api.eu-west-1.amazonaws.com/Prod";
 
+  let selectedBackend = "espeak"
   let selectedLanguage;
   let languages;
   let myDropzone;
