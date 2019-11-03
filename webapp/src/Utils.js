@@ -30,7 +30,7 @@ const getLanguagesAsync = async (backend) => {
             return JSON.parse(cachedLanguages);
         }
     
-        const response = await fetch("http://localhost:5000/speech/list-voices", {
+        const response = await fetch(BASE_API_URL + "/espeak-list-languages", {
             method: "get"
         });
 

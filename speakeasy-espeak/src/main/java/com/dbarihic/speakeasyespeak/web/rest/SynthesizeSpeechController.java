@@ -37,6 +37,24 @@ public class SynthesizeSpeechController {
     }
 
     @CrossOrigin(origins = "*")
+    @GetMapping("/synthesize")
+    public String synthesizeSpeech(@RequestParam(name = "language") String language,
+                                   @RequestParam(name = "text") String text)
+                                    throws IOException, InterruptedException {
+        Voice voice = new Voice();
+        voice.setName(language);
+
+        espeakHelper.setVoice(voice);
+        File file = espeakHelper.speakToFile(text, "test");
+
+        byte[] fileContent = FileUtils.readFileToByteArray(file);
+        String base64 = Base64.getEncoder().encodeToString(fileContent);
+        file.delete();
+
+        return base64;
+    }
+
+    @CrossOrigin(origins = "*")
     @GetMapping("/list-voices")
     public ResponseEntity<Map<String, List<Language>>> listVoices() throws IOException, InterruptedException {
 

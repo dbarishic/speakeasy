@@ -69,14 +69,8 @@
 
     let audioAsBase64 = null;
     if (selectedBackend === "espeak") {
-      const response = await fetch("http://localhost:5000/speech/synthesize", {
-        method: "post",
-        cache: "force-cache",
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(requestBody)
+      const response = await fetch(BASE_API_URL + "/espeak-synthesize?" + "language=" + selectedLanguage.code + "&text=" + textToTranslate, {
+        method: "get"
       });
 
       audioAsBase64 = await response.text();
